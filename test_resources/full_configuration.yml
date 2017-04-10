@@ -1,0 +1,13 @@
+---
+# A full configuration used for testing
+external-ips:
+  ips:
+    - 127.0.0.1
+    - 192.168.0.1
+  ip-range:
+    from: 127.0.0.1/16
+    to: 127.0.0.1/16
+  service-ip: 127.0.0.2
+cluster:
+  labels: cluster-1
+  stateful-set: stateful-set-1
