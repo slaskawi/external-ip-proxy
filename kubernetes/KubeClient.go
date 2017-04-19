@@ -7,9 +7,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/rest"
 	"time"
 	"k8s.io/apimachinery/pkg/labels"
 	"github.com/slaskawi/external-ip-proxy/logging"
+	"os"
 )
 
 const (
@@ -34,7 +36,15 @@ type KubeClient struct {
 func NewKubeProxy(KubernetesConfig string) (*KubeClient, error) {
 	client := &KubeClient{KubernetesConfigPath: KubernetesConfig}
 
-	config, err := clientcmd.BuildConfigFromFlags("", client.KubernetesConfigPath)
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		//we are in stanalone mode, let's check if the file exists
+		if _, err := os.Stat(KubernetesConfig); err != nil {
+			return nil, err
+		}
+	}
+
+	config, err = clientcmd.BuildConfigFromFlags("", client.KubernetesConfigPath)
 	if err != nil {
 		return nil, err
 	}

@@ -8,13 +8,16 @@ import (
 	"github.com/slaskawi/external-ip-proxy/http"
 	"flag"
 	"fmt"
-	"time"
+	"os/user"
 	"strings"
+	"time"
 )
 
 var (
 	localAddr  = flag.String("l", "localhost:1234", "local address")
 	remoteAddr = flag.String("r", "ec2-52-215-14-157.eu-west-1.compute.amazonaws.com:8080", "remote address")
+
+	kubeConfigLocation = flag.String("c", "", "Kubernetes configuration")
 
 	Logger = &logging.Logger{}
 
@@ -47,6 +50,16 @@ func main() {
 	Logger.Info("---- Initialization ----")
 	flag.Parse()
 
+	if len(*kubeConfigLocation) == 0 {
+		usr, err := user.Current()
+		if err != nil {
+			Logger.Warning("Could not find current user %v", err)
+		} else {
+			path := fmt.Sprintf("%v/.kube/config", usr.HomeDir)
+			kubeConfigLocation = &path
+		}
+	}
+
 	Configuration, err = configuration.Unmarshal([]byte(ConfigurationAsString))
 	if err != nil {
 		Logger.Error("Could not initialize configuration, %v")
@@ -57,7 +70,7 @@ func main() {
 	HTTPServer.Start()
 
 
-	KubernetesClient, err = kubernetes.NewKubeProxy("/home/slaskawi/.kube/config")
+	KubernetesClient, err = kubernetes.NewKubeProxy(*kubeConfigLocation)
 	if err != nil {
 		Logger.Error("Could not initialize Kubernetes client, %v", err)
 		panic(err)
@@ -93,7 +106,7 @@ func main() {
 				Logger.Error("%v", err)
 			}
 		}
-		
+
 		time.Sleep(10 * time.Second)
 	}
 
