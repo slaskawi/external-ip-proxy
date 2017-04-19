@@ -19,7 +19,7 @@ var (
 
 	kubeConfigLocation = flag.String("c", "", "Kubernetes configuration")
 
-	Logger = &logging.Logger{}
+	Logger = logging.NewLogger("main")
 
 	Configuration    *configuration.Configuration
 	KubernetesClient *kubernetes.KubeClient

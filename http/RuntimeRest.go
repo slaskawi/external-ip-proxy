@@ -15,7 +15,7 @@ type HttpServer struct {
 	YamlToBeHosted string
 }
 
-var Logger *logging.Logger = &logging.Logger{}
+var Logger *logging.Logger = logging.NewLogger("http")
 
 func NewHttpServer(ip string, port uint32, content string) *HttpServer {
 	return &HttpServer{

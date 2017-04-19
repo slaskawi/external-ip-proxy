@@ -26,7 +26,7 @@ const (
 	ProxyServiceName  = ExternalIPsLabelPrefix + "-proxy-" + Service + "-%v"
 )
 
-var Logger *logging.Logger = &logging.Logger{}
+var Logger *logging.Logger = logging.NewLogger("kubernetes")
 
 type KubeClient struct {
 	KubernetesConfigPath string

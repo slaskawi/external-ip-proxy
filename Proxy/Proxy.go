@@ -14,7 +14,7 @@ const (
 	Outbound dataDirection = "outbound"
 )
 
-var logger = &log.Logger{"proxy"}
+var logger = log.NewLogger("proxy")
 
 // Proxy - Manages a Proxy connection, piping data between local and remote.
 type Proxy struct {
