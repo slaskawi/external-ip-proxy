@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"log"
 	"html"
-	"../logging"
+	"github.com/slaskawi/external-ip-proxy/logging"
 
 )
 

@@ -4,7 +4,7 @@ import (
 	"io"
 	"net"
 	"fmt"
-	log "../logging"
+	log "github.com/slaskawi/external-ip-proxy/logging"
 )
 
 type dataDirection string

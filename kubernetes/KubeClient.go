@@ -9,7 +9,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"time"
 	"k8s.io/apimachinery/pkg/labels"
-	"../logging"
+	"github.com/slaskawi/external-ip-proxy/logging"
 )
 
 const (

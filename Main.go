@@ -1,11 +1,11 @@
 package main
 
 import (
-	"./Proxy"
-	"./configuration"
-	"./kubernetes"
-	"./logging"
-	"./http"
+	"github.com/slaskawi/external-ip-proxy/Proxy"
+	"github.com/slaskawi/external-ip-proxy/configuration"
+	"github.com/slaskawi/external-ip-proxy/kubernetes"
+	"github.com/slaskawi/external-ip-proxy/logging"
+	"github.com/slaskawi/external-ip-proxy/http"
 	"flag"
 	"fmt"
 	"time"
