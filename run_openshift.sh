@@ -6,4 +6,6 @@ oc delete all --all
 oc policy add-role-to-user edit system:serviceaccount:myproject:default -n myproject || true
 
 # Ready, set, action
+oc new-app jboss/infinispan-server:9.0.0.Final || true
+
 oc new-app slaskawi/external-ip-proxy || true

@@ -16,6 +16,7 @@ type Configuration struct {
 	} `yaml:"external-ips"`
 	Cluster struct {
 		Labels [] string `yaml:"labels"`
+		Ports [] int32 `yaml:"ports"`
 		StatefulSet string `yaml:"stateful-set"`
 	} `yaml:"cluster"`
 }
@@ -35,6 +36,8 @@ external-ips:
 cluster:
    labels:
       - cluster-1
+   ports:
+      - 8080
    stateful-set: stateful-set-1
 `
 

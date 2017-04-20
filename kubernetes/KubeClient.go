@@ -8,7 +8,6 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/rest"
-	"time"
 	"k8s.io/apimachinery/pkg/labels"
 	"github.com/slaskawi/external-ip-proxy/logging"
 	"os"
@@ -17,13 +16,17 @@ import (
 const (
 	ExternalIPsLabelPrefix = "extip"
 
-	Service = "service"
+	Service    = "service"
+	Deployment = "deployment"
 
 	ConfigurationServiceLabel = ExternalIPsLabelPrefix + "-controller-" + Service
 	ConfigurationServiceName  = ExternalIPsLabelPrefix + "-controller-" + Service
 
 	ProxyServiceLabel = ExternalIPsLabelPrefix + "-proxy-" + Service + "-%v"
 	ProxyServiceName  = ExternalIPsLabelPrefix + "-proxy-" + Service + "-%v"
+
+	ProxyDeploymentLabel = ExternalIPsLabelPrefix + "-proxy-" + Deployment + "-%v"
+	ProxyDeploymentName  = ExternalIPsLabelPrefix + "-proxy-" + Deployment + "-%v"
 )
 
 var Logger *logging.Logger = logging.NewLogger("kubernetes")
@@ -57,7 +60,7 @@ func NewKubeProxy(KubernetesConfig string) (*KubeClient, error) {
 	return client, nil
 }
 
-func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabels map[string]string, SourcePort int32, DestinationPort int32, ExternalIP string) error {
+func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabels map[string]string, SourcePorts []int32, DestinationPorts []int32, ExternalIP string) error {
 	//Add more ways:
 	//https://docs.openshift.org/latest/dev_guide/getting_traffic_into_cluster.html#using-externalIP
 
@@ -71,6 +74,18 @@ func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabe
 	if numberOfServices > 1 {
 		return fmt.Errorf("Found more than 1 configuration service with labels %v", ConfigurationServiceLabel)
 	} else if numberOfServices == 0 {
+
+		ports := make([]v1.ServicePort, len(SourcePorts))
+		for index, sourcePort := range SourcePorts {
+			ports[index] = v1.ServicePort{
+				Protocol: "TCP",
+				Port:     sourcePort,
+				TargetPort: intstr.IntOrString{
+					IntVal: DestinationPorts[index],
+				},
+			}
+		}
+
 		Logger.Debug("There is no service, creating one")
 		service, err := client.kubeClient.CoreV1().Services("myproject").Create(&v1.Service{
 			TypeMeta: metav1.TypeMeta{
@@ -78,17 +93,9 @@ func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabe
 				APIVersion: "v1",
 			},
 			Spec: v1.ServiceSpec{
-				Type: "LoadBalancer",
+				Type:           "LoadBalancer",
 				LoadBalancerIP: ExternalIP,
-				Ports: []v1.ServicePort{
-					{
-						Protocol: "TCP",
-						Port:     SourcePort,
-						TargetPort: intstr.IntOrString{
-							IntVal: DestinationPort,
-						},
-					},
-				},
+				Ports:          ports,
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   ServiceName,
@@ -106,26 +113,59 @@ func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabe
 	return nil
 }
 
+func (client *KubeClient) EnsurePodIsRunning(PodName string, PodLabels map[string]string, ExposedPorts []int32, Image string) error {
+	//Add more ways:
+	//https://docs.openshift.org/latest/dev_guide/getting_traffic_into_cluster.html#using-externalIP
 
-func main() {
-	//kubeconfig := flag.String("kubeconfig", "/home/slaskawi/.kube/config", "absolute path to the kubeconfig file")
-	//flag.Parse()
-	// uses the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", "/home/slaskawi/.kube/config")
+	pods, err := client.kubeClient.CoreV1().Pods("myproject").List(metav1.ListOptions{
+		LabelSelector: labels.Set(PodLabels).String(),
+	})
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
-	// creates the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-	for {
-		pods, err := clientset.Core().Pods("myproject").List(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
+
+	numberOfPods := len(pods.Items)
+	if numberOfPods > 1 {
+		return fmt.Errorf("Found more than 1 configuration service with name %v and labels %v", PodName, PodLabels)
+	} else if numberOfPods == 0 {
+
+		ports := make([]v1.ContainerPort, len(ExposedPorts))
+		for index, sourcePort := range ExposedPorts {
+			ports[index] = v1.ContainerPort{
+				Protocol:      "TCP",
+				ContainerPort: sourcePort,
+			}
 		}
-		fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
-		time.Sleep(10 * time.Second)
+
+		Logger.Debug("There is no pod, creating one")
+		pod, err := client.kubeClient.CoreV1().Pods("myproject").Create(&v1.Pod{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Pod",
+				APIVersion: "v1",
+			},
+			Spec: v1.PodSpec{
+				RestartPolicy: "Never",
+				Containers: []v1.Container{
+					{
+						Name:  PodName,
+						Image: Image,
+						Ports: ports,
+					},
+
+				},
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   PodName,
+				Labels: PodLabels,
+			},
+		})
+		if err != nil {
+			return err
+		}
+		Logger.Debug("Pod [%v] created", pod)
+	} else {
+		Logger.Debug("The Pod [%v] is fine", PodName)
 	}
+
+	return nil
 }

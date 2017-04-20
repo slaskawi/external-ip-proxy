@@ -24,18 +24,34 @@ func init() {
 }
 
 func (l *Logger) Info(format string, args ...interface{}) {
-	l.log.Infof(format, args)
+	if len(args) == 0 {
+		l.log.Info(format)
+	} else {
+		l.log.Infof(format, args)
+	}
 }
 
 func (l *Logger) Debug(format string, args ...interface{}) {
-	l.log.Debug(format, args)
+	if len(args) == 0 {
+		l.log.Debug(format)
+	} else {
+		l.log.Debugf(format, args)
+	}
 }
 
 func (l *Logger) Warning(format string, args ...interface{}) {
-	l.log.Warningf(format, args)
+	if len(args) == 0 {
+		l.log.Warning(format)
+	} else {
+		l.log.Warningf(format, args)
+	}
 }
 
 func (l *Logger) Error(format string, args ...interface{}) {
-	l.log.Errorf(format, args)
+	if len(args) == 0 {
+		l.log.Error(format)
+	} else {
+		l.log.Errorf(format, args)
+	}
 }
 
