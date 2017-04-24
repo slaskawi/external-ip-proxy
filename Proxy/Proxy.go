@@ -76,13 +76,13 @@ func (p *Proxy) Start() error {
 		go p.pipe(rconn, lconn, Outbound)
 
 		//wait for close...
-		<-p.errsig
-
-		if p.error != nil {
-			return p.error
-		}
-
-		fmt.Printf("Closed (%v bytes sent, %v bytes recieved)", p.SentBytes, p.ReceivedBytes)
+		//<-p.errsig
+		//
+		//if p.error != nil {
+		//	return p.error
+		//}
+		//
+		//fmt.Printf("Closed (%v bytes sent, %v bytes recieved)", p.SentBytes, p.ReceivedBytes)
 	}
 
 	return nil
