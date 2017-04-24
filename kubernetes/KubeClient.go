@@ -113,7 +113,7 @@ func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabe
 	return nil
 }
 
-func (client *KubeClient) EnsurePodIsRunning(PodName string, PodLabels map[string]string, ExposedPorts []int32, Image string) error {
+func (client *KubeClient) EnsurePodIsRunning(PodName string, PodLabels map[string]string, ExposedPorts []int32, Image string, RuntimeParameters []string) error {
 	//Add more ways:
 	//https://docs.openshift.org/latest/dev_guide/getting_traffic_into_cluster.html#using-externalIP
 
@@ -150,6 +150,7 @@ func (client *KubeClient) EnsurePodIsRunning(PodName string, PodLabels map[strin
 						Name:  PodName,
 						Image: Image,
 						Ports: ports,
+						Args: RuntimeParameters,
 					},
 
 				},
@@ -168,4 +169,11 @@ func (client *KubeClient) EnsurePodIsRunning(PodName string, PodLabels map[strin
 	}
 
 	return nil
+}
+
+func (client *KubeClient) GetPods(PodLabels map[string]string) ([]v1.Pod, error) {
+	pods, err := client.kubeClient.CoreV1().Pods("myproject").List(metav1.ListOptions{
+		LabelSelector: labels.Set(PodLabels).String(),
+	})
+	return pods.Items, err
 }

@@ -8,4 +8,4 @@ oc policy add-role-to-user edit system:serviceaccount:myproject:default -n mypro
 # Ready, set, action
 oc new-app jboss/infinispan-server:9.0.0.Final || true
 
-oc new-app slaskawi/external-ip-proxy || true
+#oc new-app docker.io/slaskawi/external-ip-proxy || true

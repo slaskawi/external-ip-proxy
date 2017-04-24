@@ -1,1 +1,1 @@
-docker run slaskawi/external-ip-proxy
+docker run docker.io/slaskawi/external-ip-proxy
