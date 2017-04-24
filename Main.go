@@ -44,7 +44,7 @@ cluster:
    labels:
       app: infinispan-server
    ports:
-      - 8080
+      - 11222
 #   stateful-set: stateful-set-1
 `
 
