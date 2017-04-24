@@ -43,18 +43,18 @@ func NewProxy(LocalAddress string, RemoteAddress string) *Proxy {
 func (p *Proxy) Start() error {
 	laddr, err := net.ResolveTCPAddr("tcp", p.LocalAddress)
 	if err != nil {
-		return fmt.Errorf("Failed to resolve local address: %s", err)
+		return fmt.Errorf("Failed to resolve local address: %v", err)
 	}
 	raddr, err := net.ResolveTCPAddr("tcp", p.RemoteAddress)
 	if err != nil {
-		return fmt.Errorf("Failed to resolve remote address: %s", err)
+		return fmt.Errorf("Failed to resolve remote address: %v", err)
 	}
 	listener, err := net.ListenTCP("tcp", laddr)
 	if err != nil {
-		return fmt.Errorf("Failed to open local port to listen: %s", err)
+		return fmt.Errorf("Failed to open local port to listen: %v", err)
 	}
 	defer listener.Close()
-	logger.Info("Proxing from %q to %q", laddr, raddr)
+	logger.Info("Proxing from %v to %v", laddr, raddr)
 
 	for {
 		lconn, err := listener.AcceptTCP()
@@ -64,12 +64,12 @@ func (p *Proxy) Start() error {
 		rconn, err := net.DialTCP("tcp", nil, raddr)
 		rconn.SetNoDelay(p.NoDelay)
 		if err != nil {
-			return fmt.Errorf("Remote connection failed: %s", err)
+			return fmt.Errorf("Remote connection failed: %v", err)
 		}
 		defer rconn.Close()
 
 		//display both ends
-		logger.Info("Opened %s >>> %s", laddr.String(), raddr.String())
+		logger.Info("Opened %v >>> %v", laddr.String(), raddr.String())
 
 		//bidirectional copy
 		go p.pipe(lconn, rconn, Inbound)
@@ -82,7 +82,7 @@ func (p *Proxy) Start() error {
 			return p.error
 		}
 
-		fmt.Printf("Closed (%d bytes sent, %d bytes recieved)", p.SentBytes, p.ReceivedBytes)
+		fmt.Printf("Closed (%v bytes sent, %v bytes recieved)", p.SentBytes, p.ReceivedBytes)
 	}
 
 	return nil
@@ -112,7 +112,7 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, direction dataDirection) {
 	for {
 		n, err := src.Read(buff)
 		if err != nil {
-			p.err("Read failed '%s'\n", err)
+			p.err("Read failed '%v'\n", err)
 			return
 		}
 		b := buff[:n]

@@ -60,7 +60,7 @@ func NewKubeProxy(KubernetesConfig string) (*KubeClient, error) {
 	return client, nil
 }
 
-func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabels map[string]string, SourcePorts []int32, DestinationPorts []int32, ExternalIP string) error {
+func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabels map[string]string, SourcePorts []int32, DestinationPorts []int32, ExternalIP string, Selector map[string]string) error {
 	//Add more ways:
 	//https://docs.openshift.org/latest/dev_guide/getting_traffic_into_cluster.html#using-externalIP
 
@@ -96,6 +96,7 @@ func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabe
 				Type:           "LoadBalancer",
 				LoadBalancerIP: ExternalIP,
 				Ports:          ports,
+				Selector:       Selector,
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   ServiceName,

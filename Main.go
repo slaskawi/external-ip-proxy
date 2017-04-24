@@ -44,7 +44,7 @@ cluster:
    labels:
       app: infinispan-server
    ports:
-      - 11222
+      - 8080
 #   stateful-set: stateful-set-1
 `
 
@@ -102,7 +102,8 @@ func main() {
 				map[string]string{kubernetes.ExternalIPsLabelPrefix: kubernetes.ConfigurationServiceLabel},
 				[]int32{8080},
 				[]int32{8080},
-				Configuration.ExternalIps.ServiceIp)
+				Configuration.ExternalIps.ServiceIp,
+				nil)
 			if err != nil {
 				Logger.Error("%v", err)
 			}
@@ -114,13 +115,15 @@ func main() {
 
 				ipForName := strings.Replace(Ip, ".", "-", -1)
 				ipAsString := Ip
+				PodLabels := map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyDeploymentLabel, ipForName)}
 
 				err = KubernetesClient.EnsureServiceIsRunning(
 					fmt.Sprintf(kubernetes.ProxyServiceName, ipForName),
 					map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyServiceLabel, ipForName)},
 					Configuration.Cluster.Ports,
 					Configuration.Cluster.Ports,
-					ipAsString)
+					ipAsString,
+					PodLabels)
 				if err != nil {
 					Logger.Error("%v", err)
 				}
@@ -136,16 +139,15 @@ func main() {
 				PodLabels := map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyDeploymentLabel, SanitizedIP)}
 
 				ProxyFromIP := Pod.Status.PodIP
-				ProxyToIP := "localhost"
+				ProxyToIP := "0.0.0.0"
 
 				var RuntimeParameters = []string{
-					"run",
 					fmt.Sprintf("-r=%v:%v", ProxyFromIP, Configuration.Cluster.Ports[0]),
 					fmt.Sprintf("-l=%v:%v", ProxyToIP, Configuration.Cluster.Ports[0]),
 				}
 
 				var Command = []string{
-					"/usr/local/bin/go-wrapper",
+					"/go/bin/app",
 				}
 
 				err = KubernetesClient.EnsurePodIsRunning(
