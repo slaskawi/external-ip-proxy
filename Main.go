@@ -139,9 +139,13 @@ func main() {
 				ProxyToIP := "localhost"
 
 				var RuntimeParameters = []string{
-					"go run Main.go",
-					fmt.Sprintf("-r %v:%v", ProxyFromIP, Configuration.Cluster.Ports[0]),
-					fmt.Sprintf("-l %v:%v", ProxyToIP, Configuration.Cluster.Ports[0]),
+					"run",
+					fmt.Sprintf("-r=%v:%v", ProxyFromIP, Configuration.Cluster.Ports[0]),
+					fmt.Sprintf("-l=%v:%v", ProxyToIP, Configuration.Cluster.Ports[0]),
+				}
+
+				var Command = []string{
+					"/usr/local/bin/go-wrapper",
 				}
 
 				err = KubernetesClient.EnsurePodIsRunning(
@@ -149,6 +153,7 @@ func main() {
 					PodLabels,
 					[]int32{8080},
 					"docker.io/slaskawi/external-ip-proxy",
+					Command,
 					RuntimeParameters)
 				if err != nil {
 					Logger.Error("%v", err)
