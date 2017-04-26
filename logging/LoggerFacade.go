@@ -10,6 +10,17 @@ type Logger struct {
 	log *log.Logger
 }
 
+type LogLevel string
+
+const (
+	Debug LogLevel = "debug"
+	Info LogLevel = "info"
+	Warning LogLevel = "warning"
+	Error LogLevel = "error"
+)
+
+var LoggingFromLevel LogLevel = Info
+
 func NewLogger(module string) (*Logger) {
 	loggerInstance := &Logger{Package: module}
 	loggerInstance.log = log.MustGetLogger(module)
@@ -24,6 +35,9 @@ func init() {
 }
 
 func (l *Logger) Info(format string, args ...interface{}) {
+	if LoggingFromLevel == Warning || LoggingFromLevel == Error {
+		return
+	}
 	if len(args) == 0 {
 		l.log.Info(format)
 	} else {
@@ -32,6 +46,9 @@ func (l *Logger) Info(format string, args ...interface{}) {
 }
 
 func (l *Logger) Debug(format string, args ...interface{}) {
+	if LoggingFromLevel == Info || LoggingFromLevel == Warning || LoggingFromLevel == Error {
+		return
+	}
 	if len(args) == 0 {
 		l.log.Debug(format)
 	} else {
@@ -40,6 +57,9 @@ func (l *Logger) Debug(format string, args ...interface{}) {
 }
 
 func (l *Logger) Warning(format string, args ...interface{}) {
+	if LoggingFromLevel == Error {
+		return
+	}
 	if len(args) == 0 {
 		l.log.Warning(format)
 	} else {
