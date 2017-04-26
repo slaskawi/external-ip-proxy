@@ -64,6 +64,8 @@ public class InfinispanRemote {
          }
          cacheManager = new RemoteCacheManager(builder.build());
          cache = cacheManager.getCache();
+         cache.clear();
+         Thread.sleep(500);
       }
 
       @TearDown
