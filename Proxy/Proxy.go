@@ -118,8 +118,8 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, direction dataDirection) {
 		b := buff[:n]
 
 		//show output
-		logger.Info("%v >>> %v", direction, n)
-		logger.Info(byteFormat, b)
+		logger.Debug("%v >>> %v", direction, n)
+		logger.Debug(byteFormat, b)
 
 		//write out result
 		n, err = dst.Write(b)
