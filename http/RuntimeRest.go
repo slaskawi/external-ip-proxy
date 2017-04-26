@@ -12,12 +12,12 @@ import (
 type HttpServer struct {
 	IpAddress string
 	Port uint32
-	YamlToBeHosted string
+	YamlToBeHosted interface{}
 }
 
 var Logger *logging.Logger = logging.NewLogger("http")
 
-func NewHttpServer(ip string, port uint32, content string) *HttpServer {
+func NewHttpServer(ip string, port uint32, content interface{}) *HttpServer {
 	return &HttpServer{
 		IpAddress: ip,
 		Port: port,

@@ -11,6 +11,7 @@ import (
 	"os/user"
 	"strings"
 	"time"
+	"io/ioutil"
 )
 
 var (
@@ -18,6 +19,10 @@ var (
 	ProxyRemoteAddress = flag.String("r", "", "A remote address, e.g. google.com")
 
 	KubeConfigLocation = flag.String("c", "", "Kubernetes configuration")
+
+	LogLevel = flag.String("loglevel", "Debug", "Log level, e.g. Debug")
+
+	ConfigurationPath = flag.String("configuration", "./configuration.yml", "Path to configuration, e.g. ./configuration.yml")
 
 	Logger = logging.NewLogger("main")
 
@@ -28,30 +33,10 @@ var (
 	err error
 )
 
-var ConfigurationAsString = `
----
-# A full configuration used for testing
-external-ips:
-   service-ip: 172.29.0.1
-   ips:
-      - 172.29.0.2
-      - 172.29.0.3
-      - 172.29.0.4
-#   ip-range:
-#      from: 127.0.0.1/16
-#      to: 127.0.0.1/16
-cluster:
-   labels:
-      app: infinispan-server
-   ports:
-      - 11222
-#   stateful-set: stateful-set-1
-`
-
 func main() {
 	Logger.Info("---- Initialization ----")
 	flag.Parse()
-	logging.LoggingFromLevel = logging.Info
+	logging.LoggingFromLevel = logging.LogLevel(*LogLevel)
 
 	IsInMasterMode := true
 
@@ -88,12 +73,18 @@ func processMasterLoop() {
 		}
 	}
 
-	Configuration, err = configuration.Unmarshal([]byte(ConfigurationAsString))
+	ConfigurationAsBytes, err := ioutil.ReadFile(*ConfigurationPath)
+	if err != nil {
+		Logger.Error("Could not find configuration, %v", err)
+		panic(err)
+	}
+
+	Configuration, err = configuration.Unmarshal(ConfigurationAsBytes)
 	if err != nil {
 		Logger.Error("Could not initialize configuration, %v", err)
 		panic(err)
 	}
-
+	ConfigurationAsString := string(ConfigurationAsBytes)
 	HTTPServer = http.NewHttpServer("0.0.0.0", 8888, ConfigurationAsString)
 	HTTPServer.Start()
 
