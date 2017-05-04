@@ -1,0 +1,230 @@
+/opt/jdk1.8.0_101/bin/java -Didea.launcher.port=7538 -Didea.launcher.bin.path=/opt/idea-IU-163.7743.44/bin -Dfile.encoding=UTF-8 -classpath /opt/jdk1.8.0_101/jre/lib/charsets.jar:/opt/jdk1.8.0_101/jre/lib/deploy.jar:/opt/jdk1.8.0_101/jre/lib/ext/cldrdata.jar:/opt/jdk1.8.0_101/jre/lib/ext/dnsns.jar:/opt/jdk1.8.0_101/jre/lib/ext/jaccess.jar:/opt/jdk1.8.0_101/jre/lib/ext/jfxrt.jar:/opt/jdk1.8.0_101/jre/lib/ext/localedata.jar:/opt/jdk1.8.0_101/jre/lib/ext/nashorn.jar:/opt/jdk1.8.0_101/jre/lib/ext/sunec.jar:/opt/jdk1.8.0_101/jre/lib/ext/sunjce_provider.jar:/opt/jdk1.8.0_101/jre/lib/ext/sunpkcs11.jar:/opt/jdk1.8.0_101/jre/lib/ext/zipfs.jar:/opt/jdk1.8.0_101/jre/lib/javaws.jar:/opt/jdk1.8.0_101/jre/lib/jce.jar:/opt/jdk1.8.0_101/jre/lib/jfr.jar:/opt/jdk1.8.0_101/jre/lib/jfxswt.jar:/opt/jdk1.8.0_101/jre/lib/jsse.jar:/opt/jdk1.8.0_101/jre/lib/management-agent.jar:/opt/jdk1.8.0_101/jre/lib/plugin.jar:/opt/jdk1.8.0_101/jre/lib/resources.jar:/opt/jdk1.8.0_101/jre/lib/rt.jar:/home/slaskawi/go_path/src/github.com/slaskawi/external-ip-proxy/benchmark/target/classes:/home/slaskawi/.m2/repository/org/infinispan/infinispan-remote/9.0.0.Final/infinispan-remote-9.0.0.Final.jar:/home/slaskawi/.m2/repository/org/openjdk/jmh/jmh-core/1.14.1/jmh-core-1.14.1.jar:/home/slaskawi/.m2/repository/net/sf/jopt-simple/jopt-simple/4.6/jopt-simple-4.6.jar:/home/slaskawi/.m2/repository/org/apache/commons/commons-math3/3.2/commons-math3-3.2.jar:/home/slaskawi/.m2/repository/org/openjdk/jmh/jmh-generator-annprocess/1.14.1/jmh-generator-annprocess-1.14.1.jar:/opt/idea-IU-163.7743.44/lib/idea_rt.jar com.intellij.rt.execution.application.AppMain org.infinispan.tutorial.simple.remote.InfinispanRemote
+# JMH 1.14.1 (released 226 days ago, please consider updating!)
+# VM version: JDK 1.8.0_101, VM 25.101-b13
+# VM invoker: /opt/jdk1.8.0_101/jre/bin/java
+# VM options: -Didea.launcher.port=7538 -Didea.launcher.bin.path=/opt/idea-IU-163.7743.44/bin -Dfile.encoding=UTF-8
+# Warmup: <none>
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.tutorial.simple.remote.InfinispanRemote.BenchmarkState.perform1000Puts
+# Parameters: (useLoadBalancerPerPod = true)
+
+# Run progress: 0.00% complete, ETA 00:02:04
+# Fork: 1 of 1
+Iteration   1: May 04, 2017 10:18:51 AM org.infinispan.client.hotrod.RemoteCacheManager start
+INFO: ISPN004021: Infinispan version: 9.0.0.Final
+171.376 ms/op
+Iteration   2: 138.731 ms/op
+Iteration   3: 145.239 ms/op
+Iteration   4: 133.896 ms/op
+Iteration   5: 138.836 ms/op
+Iteration   6: 138.134 ms/op
+Iteration   7: 133.191 ms/op
+Iteration   8: 144.624 ms/op
+Iteration   9: 140.364 ms/op
+Iteration  10: 140.766 ms/op
+Iteration  11: 139.361 ms/op
+Iteration  12: 130.686 ms/op
+Iteration  13: 139.726 ms/op
+Iteration  14: 139.359 ms/op
+Iteration  15: 132.397 ms/op
+Iteration  16: 144.961 ms/op
+Iteration  17: 139.570 ms/op
+Iteration  18: 142.185 ms/op
+Iteration  19: 141.102 ms/op
+Iteration  20: 138.791 ms/op
+Iteration  21: 140.757 ms/op
+Iteration  22: 143.443 ms/op
+Iteration  23: 135.505 ms/op
+Iteration  24: 144.920 ms/op
+Iteration  25: 141.567 ms/op
+Iteration  26: 140.698 ms/op
+Iteration  27: 178.386 ms/op
+Iteration  28: 137.334 ms/op
+Iteration  29: 137.462 ms/op
+Iteration  30: 139.796 ms/op
+Iteration  31: 146.142 ms/op
+
+
+Result "perform1000Puts":
+  141.913 ±(99.9%) 6.296 ms/op [Average]
+  (min, avg, max) = (130.686, 141.913, 178.386), stdev = 9.614
+  CI (99.9%): [135.617, 148.209] (assumes normal distribution)
+
+
+# JMH 1.14.1 (released 226 days ago, please consider updating!)
+# VM version: JDK 1.8.0_101, VM 25.101-b13
+# VM invoker: /opt/jdk1.8.0_101/jre/bin/java
+# VM options: -Didea.launcher.port=7538 -Didea.launcher.bin.path=/opt/idea-IU-163.7743.44/bin -Dfile.encoding=UTF-8
+# Warmup: <none>
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.tutorial.simple.remote.InfinispanRemote.BenchmarkState.perform1000Puts
+# Parameters: (useLoadBalancerPerPod = false)
+
+# Run progress: 25.00% complete, ETA 00:02:05
+# Fork: 1 of 1
+Iteration   1: May 04, 2017 10:19:33 AM org.infinispan.client.hotrod.RemoteCacheManager start
+INFO: ISPN004021: Infinispan version: 9.0.0.Final
+157.384 ms/op
+Iteration   2: 132.360 ms/op
+Iteration   3: 123.759 ms/op
+Iteration   4: 123.864 ms/op
+Iteration   5: 127.692 ms/op
+Iteration   6: 128.195 ms/op
+Iteration   7: 131.857 ms/op
+Iteration   8: 130.816 ms/op
+Iteration   9: 128.804 ms/op
+Iteration  10: 130.173 ms/op
+Iteration  11: 135.503 ms/op
+Iteration  12: 123.148 ms/op
+Iteration  13: 131.239 ms/op
+Iteration  14: 125.590 ms/op
+Iteration  15: 129.666 ms/op
+Iteration  16: 126.659 ms/op
+Iteration  17: 127.643 ms/op
+Iteration  18: 134.394 ms/op
+Iteration  19: 127.883 ms/op
+Iteration  20: 123.837 ms/op
+Iteration  21: 132.293 ms/op
+Iteration  22: 123.383 ms/op
+Iteration  23: 129.525 ms/op
+Iteration  24: 127.441 ms/op
+Iteration  25: 133.210 ms/op
+Iteration  26: 128.301 ms/op
+Iteration  27: 131.195 ms/op
+Iteration  28: 122.851 ms/op
+Iteration  29: 134.802 ms/op
+Iteration  30: 123.740 ms/op
+Iteration  31: 130.682 ms/op
+
+
+Result "perform1000Puts":
+  129.609 ±(99.9%) 4.146 ms/op [Average]
+  (min, avg, max) = (122.851, 129.609, 157.384), stdev = 6.331
+  CI (99.9%): [125.463, 133.755] (assumes normal distribution)
+
+
+# JMH 1.14.1 (released 226 days ago, please consider updating!)
+# VM version: JDK 1.8.0_101, VM 25.101-b13
+# VM invoker: /opt/jdk1.8.0_101/jre/bin/java
+# VM options: -Didea.launcher.port=7538 -Didea.launcher.bin.path=/opt/idea-IU-163.7743.44/bin -Dfile.encoding=UTF-8
+# Warmup: <none>
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.tutorial.simple.remote.InfinispanRemote.BenchmarkState.perform1000PutsAndGets
+# Parameters: (useLoadBalancerPerPod = true)
+
+# Run progress: 50.00% complete, ETA 00:01:22
+# Fork: 1 of 1
+Iteration   1: May 04, 2017 10:20:13 AM org.infinispan.client.hotrod.RemoteCacheManager start
+INFO: ISPN004021: Infinispan version: 9.0.0.Final
+284.055 ms/op
+Iteration   2: 241.638 ms/op
+Iteration   3: 238.434 ms/op
+Iteration   4: 228.283 ms/op
+Iteration   5: 235.537 ms/op
+Iteration   6: 237.900 ms/op
+Iteration   7: 240.218 ms/op
+Iteration   8: 247.601 ms/op
+Iteration   9: 243.379 ms/op
+Iteration  10: 242.637 ms/op
+Iteration  11: 225.937 ms/op
+Iteration  12: 240.812 ms/op
+Iteration  13: 239.435 ms/op
+Iteration  14: 247.128 ms/op
+Iteration  15: 239.628 ms/op
+Iteration  16: 235.108 ms/op
+Iteration  17: 226.977 ms/op
+Iteration  18: 244.183 ms/op
+Iteration  19: 235.173 ms/op
+Iteration  20: 228.353 ms/op
+Iteration  21: 238.151 ms/op
+Iteration  22: 240.726 ms/op
+Iteration  23: 229.455 ms/op
+Iteration  24: 248.352 ms/op
+Iteration  25: 241.432 ms/op
+Iteration  26: 225.068 ms/op
+Iteration  27: 227.638 ms/op
+Iteration  28: 242.501 ms/op
+Iteration  29: 246.417 ms/op
+Iteration  30: 232.965 ms/op
+Iteration  31: 239.487 ms/op
+
+
+Result "perform1000PutsAndGets":
+  239.181 ±(99.9%) 7.015 ms/op [Average]
+  (min, avg, max) = (225.068, 239.181, 284.055), stdev = 10.712
+  CI (99.9%): [232.166, 246.196] (assumes normal distribution)
+
+
+# JMH 1.14.1 (released 226 days ago, please consider updating!)
+# VM version: JDK 1.8.0_101, VM 25.101-b13
+# VM invoker: /opt/jdk1.8.0_101/jre/bin/java
+# VM options: -Didea.launcher.port=7538 -Didea.launcher.bin.path=/opt/idea-IU-163.7743.44/bin -Dfile.encoding=UTF-8
+# Warmup: <none>
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.tutorial.simple.remote.InfinispanRemote.BenchmarkState.perform1000PutsAndGets
+# Parameters: (useLoadBalancerPerPod = false)
+
+# Run progress: 75.00% complete, ETA 00:00:42
+# Fork: 1 of 1
+Iteration   1: May 04, 2017 10:20:58 AM org.infinispan.client.hotrod.RemoteCacheManager start
+INFO: ISPN004021: Infinispan version: 9.0.0.Final
+278.712 ms/op
+Iteration   2: 213.941 ms/op
+Iteration   3: 226.913 ms/op
+Iteration   4: 221.146 ms/op
+Iteration   5: 220.232 ms/op
+Iteration   6: 221.911 ms/op
+Iteration   7: 220.450 ms/op
+Iteration   8: 228.606 ms/op
+Iteration   9: 204.031 ms/op
+Iteration  10: 208.865 ms/op
+Iteration  11: 221.657 ms/op
+Iteration  12: 221.737 ms/op
+Iteration  13: 226.347 ms/op
+Iteration  14: 221.935 ms/op
+Iteration  15: 227.690 ms/op
+Iteration  16: 224.963 ms/op
+Iteration  17: 208.849 ms/op
+Iteration  18: 220.389 ms/op
+Iteration  19: 221.082 ms/op
+Iteration  20: 221.579 ms/op
+Iteration  21: 221.906 ms/op
+Iteration  22: 220.561 ms/op
+Iteration  23: 226.067 ms/op
+Iteration  24: 221.283 ms/op
+Iteration  25: 210.707 ms/op
+Iteration  26: 220.845 ms/op
+Iteration  27: 220.839 ms/op
+Iteration  28: 220.126 ms/op
+Iteration  29: 221.509 ms/op
+Iteration  30: 210.541 ms/op
+Iteration  31: 223.024 ms/op
+
+
+Result "perform1000PutsAndGets":
+  221.885 ±(99.9%) 7.906 ms/op [Average]
+  (min, avg, max) = (204.031, 221.885, 278.712), stdev = 12.073
+  CI (99.9%): [213.980, 229.791] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:02:48
+
+Benchmark                                               (useLoadBalancerPerPod)  Mode  Cnt    Score   Error  Units
+InfinispanRemote.BenchmarkState.perform1000Puts                            true  avgt   31  141.913 ± 6.296  ms/op
+InfinispanRemote.BenchmarkState.perform1000Puts                           false  avgt   31  129.609 ± 4.146  ms/op
+InfinispanRemote.BenchmarkState.perform1000PutsAndGets                     true  avgt   31  239.181 ± 7.015  ms/op
+InfinispanRemote.BenchmarkState.perform1000PutsAndGets                    false  avgt   31  221.885 ± 7.906  ms/op
+
+Process finished with exit code 0

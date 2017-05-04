@@ -48,7 +48,7 @@ public class InfinispanRemote {
             "true",
             "false"
       })
-      public boolean useProxy;
+      public boolean useLoadBalancerPerPod;
 
       RemoteCacheManager cacheManager;
       RemoteCache<String, String> cache;
@@ -57,7 +57,7 @@ public class InfinispanRemote {
       public void setup() throws Exception {
          ConfigurationBuilder builder = new ConfigurationBuilder();
          builder.clientIntelligence(ClientIntelligence.BASIC);
-         if(useProxy) {
+         if(useLoadBalancerPerPod) {
             builder.addServer().host("172.29.0.2").port(11222);
          } else {
             builder.addServer().host("172.17.0.3").port(11222);

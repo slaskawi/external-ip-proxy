@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/slaskawi/external-ip-proxy/Proxy"
 	"github.com/slaskawi/external-ip-proxy/configuration"
 	"github.com/slaskawi/external-ip-proxy/kubernetes"
 	"github.com/slaskawi/external-ip-proxy/logging"
@@ -15,9 +14,6 @@ import (
 )
 
 var (
-	ProxyLocalAddress  = flag.String("l", "", "An address for serving the proxy, e.g. localhost:8080")
-	ProxyRemoteAddress = flag.String("r", "", "A remote address, e.g. google.com")
-
 	KubeConfigLocation = flag.String("c", "", "Kubernetes configuration")
 
 	LogLevel = flag.String("loglevel", "Debug", "Log level, e.g. Debug")
@@ -38,31 +34,6 @@ func main() {
 	flag.Parse()
 	logging.LoggingFromLevel = logging.LogLevel(*LogLevel)
 
-	IsInMasterMode := true
-
-	if len(*ProxyLocalAddress) != 0 && len(*ProxyRemoteAddress) != 0 {
-		IsInMasterMode = false
-	}
-
-	if IsInMasterMode {
-		processMasterLoop()
-	} else {
-		processSlaveLoop()
-	}
-
-}
-
-func processSlaveLoop() {
-	Logger.Info("---- Slave mode ----")
-	p := proxy.NewProxy(*ProxyLocalAddress, *ProxyRemoteAddress)
-	err = p.Start()
-	if err != nil {
-		Logger.Error("Proxy error %v", err)
-		panic(err)
-	}
-}
-
-func processMasterLoop() {
 	if len(*KubeConfigLocation) == 0 {
 		usr, err := user.Current()
 		if err != nil {
@@ -118,6 +89,20 @@ func processMasterLoop() {
 			Logger.Error("%v", err)
 		}
 
+		Logger.Info("---- Adding marker labels ----")
+		for index, pod := range ClusterPods {
+			Logger.Debug("Processing Pod %v", pod.Status.PodIP)
+			ip := Configuration.ExternalIps.Ips[index]
+			ipForName := strings.Replace(ip, ".", "-", -1)
+			err = KubernetesClient.AddLabelsToPod(
+				Configuration.Cluster.Labels,
+				pod.Status.PodIP,
+				map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyServiceLabel, ipForName)})
+			if err != nil {
+				Logger.Error("%v", err)
+			}
+		}
+
 		Logger.Info("---- Updating Proxy Services ----")
 		for index := range ClusterPods {
 			Ip := Configuration.ExternalIps.Ips[index]
@@ -125,7 +110,7 @@ func processMasterLoop() {
 
 			ipForName := strings.Replace(Ip, ".", "-", -1)
 			ipAsString := Ip
-			PodLabels := map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyDeploymentLabel, ipForName)}
+			PodLabels := map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyServiceLabel, ipForName)}
 
 			err = KubernetesClient.EnsureServiceIsRunning(
 				fmt.Sprintf(kubernetes.ProxyServiceName, ipForName),
@@ -139,39 +124,7 @@ func processMasterLoop() {
 			}
 		}
 
-		Logger.Info("---- Updating Proxy Deployment ----")
-		for index, Pod := range ClusterPods {
-			Ip := Configuration.ExternalIps.Ips[index]
-			Logger.Debug("Processing Deployment for IP %v", Ip)
-
-			SanitizedIP := strings.Replace(Ip, ".", "-", -1)
-			PodName := fmt.Sprintf(kubernetes.ProxyDeploymentName, SanitizedIP)
-			PodLabels := map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyDeploymentLabel, SanitizedIP)}
-
-			ProxyFromIP := Pod.Status.PodIP
-			ProxyToIP := "0.0.0.0"
-
-			var RuntimeParameters = []string{
-				fmt.Sprintf("-r=%v:%v", ProxyFromIP, Configuration.Cluster.Ports[0]),
-				fmt.Sprintf("-l=%v:%v", ProxyToIP, Configuration.Cluster.Ports[0]),
-			}
-
-			var Command = []string{
-				"/go/bin/app",
-			}
-
-			err = KubernetesClient.EnsurePodIsRunning(
-				PodName,
-				PodLabels,
-				[]int32{8080},
-				"docker.io/slaskawi/external-ip-proxy",
-				Command,
-				RuntimeParameters)
-			if err != nil {
-				Logger.Error("%v", err)
-			}
-		}
-
 		time.Sleep(10 * time.Second)
 	}
+
 }

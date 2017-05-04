@@ -11,13 +11,13 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"github.com/slaskawi/external-ip-proxy/logging"
 	"os"
+	"reflect"
 )
 
 const (
 	ExternalIPsLabelPrefix = "extip"
 
 	Service    = "service"
-	Deployment = "deployment"
 
 	ConfigurationServiceLabel = ExternalIPsLabelPrefix + "-controller-" + Service
 	ConfigurationServiceName  = ExternalIPsLabelPrefix + "-controller-" + Service
@@ -25,8 +25,6 @@ const (
 	ProxyServiceLabel = ExternalIPsLabelPrefix + "-proxy-" + Service + "-%v"
 	ProxyServiceName  = ExternalIPsLabelPrefix + "-proxy-" + Service + "-%v"
 
-	ProxyDeploymentLabel = ExternalIPsLabelPrefix + "-proxy-" + Deployment + "-%v"
-	ProxyDeploymentName  = ExternalIPsLabelPrefix + "-proxy-" + Deployment + "-%v"
 )
 
 var Logger *logging.Logger = logging.NewLogger("kubernetes")
@@ -58,6 +56,36 @@ func NewKubeProxy(KubernetesConfig string) (*KubeClient, error) {
 	client.kubeClient = clientset
 
 	return client, nil
+}
+
+func (client *KubeClient) AddLabelsToPod(labels map[string]string, podIp string, labelsToBeAdded map[string]string) error {
+	pods, err := client.GetPods(labels)
+	if err != nil {
+		return err
+	}
+	for _, pod := range pods {
+		Logger.Debug("Checking if Pod [%v] has all labels", pod)
+		containsAllLabels := true
+		for label := range labelsToBeAdded {
+			if _, ok := pod.ObjectMeta.Labels[label]; !ok {
+				containsAllLabels = false
+				Logger.Debug("Pod [%v] will be updated with additional labels", pod)
+				break
+			}
+		}
+		if !containsAllLabels {
+			allLabels := pod.ObjectMeta.Labels
+			mapCopy(allLabels, labelsToBeAdded)
+			Logger.Debug("New labels for Pod [%v] [%v]", pod, allLabels)
+			pod.ObjectMeta.Labels = allLabels
+			_, err = client.kubeClient.CoreV1().Pods("myproject").Update(&pod)
+			if err != nil {
+				return err
+			}
+
+		}
+	}
+	return nil
 }
 
 func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabels map[string]string, SourcePorts []int32, DestinationPorts []int32, ExternalIP string, Selector map[string]string) error {
@@ -178,4 +206,12 @@ func (client *KubeClient) GetPods(PodLabels map[string]string) ([]v1.Pod, error)
 		LabelSelector: labels.Set(PodLabels).String(),
 	})
 	return pods.Items, err
+}
+
+func mapCopy(dst, src interface{}) {
+	dv, sv := reflect.ValueOf(dst), reflect.ValueOf(src)
+
+	for _, k := range sv.MapKeys() {
+		dv.SetMapIndex(k, sv.MapIndex(k))
+	}
 }
