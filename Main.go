@@ -25,8 +25,6 @@ var (
 	Configuration    *configuration.Configuration
 	KubernetesClient *kubernetes.KubeClient
 	HTTPServer *http.HttpServer
-
-	err error
 )
 
 func main() {
@@ -89,14 +87,14 @@ func main() {
 			Logger.Error("%v", err)
 		}
 
-		Logger.Info("---- Adding marker labels ----")
+		Logger.Info("---- Adding Marker Labels ----")
 		for index, pod := range ClusterPods {
 			Logger.Debug("Processing Pod %v", pod.Status.PodIP)
 			ip := Configuration.ExternalIps.Ips[index]
 			ipForName := strings.Replace(ip, ".", "-", -1)
 			err = KubernetesClient.AddLabelsToPod(
 				Configuration.Cluster.Labels,
-				pod.Status.PodIP,
+				pod.Name,
 				map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyServiceLabel, ipForName)})
 			if err != nil {
 				Logger.Error("%v", err)
@@ -123,6 +121,9 @@ func main() {
 				Logger.Error("%v", err)
 			}
 		}
+
+		Logger.Info("---- Removing unnecessary services ----")
+		KubernetesClient.RemoveUnnecessaryServices(kubernetes.ExternalIPsLabelPrefix)
 
 		time.Sleep(10 * time.Second)
 	}

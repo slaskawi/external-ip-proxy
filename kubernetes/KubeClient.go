@@ -58,31 +58,60 @@ func NewKubeProxy(KubernetesConfig string) (*KubeClient, error) {
 	return client, nil
 }
 
-func (client *KubeClient) AddLabelsToPod(labels map[string]string, podIp string, labelsToBeAdded map[string]string) error {
+func (client *KubeClient) AddLabelsToPod(labels map[string]string, podName string, labelsToBeAdded map[string]string) error {
 	pods, err := client.GetPods(labels)
 	if err != nil {
 		return err
 	}
 	for _, pod := range pods {
-		Logger.Debug("Checking if Pod [%v] has all labels", pod)
-		containsAllLabels := true
-		for label := range labelsToBeAdded {
-			if _, ok := pod.ObjectMeta.Labels[label]; !ok {
-				containsAllLabels = false
-				Logger.Debug("Pod [%v] will be updated with additional labels", pod)
-				break
+		if podName == pod.Name {
+			Logger.Debug("Checking if Pod [%v] has all labels", pod)
+			containsAllLabels := true
+			for label := range labelsToBeAdded {
+				if _, ok := pod.ObjectMeta.Labels[label]; !ok {
+					containsAllLabels = false
+					Logger.Debug("Pod [%v] will be updated with additional labels", pod)
+					break
+				}
+			}
+			if !containsAllLabels {
+				allLabels := pod.ObjectMeta.Labels
+				mapCopy(allLabels, labelsToBeAdded)
+				Logger.Debug("New labels for Pod [%v] [%v]", pod, allLabels)
+				pod.ObjectMeta.Labels = allLabels
+				_, err = client.kubeClient.CoreV1().Pods("myproject").Update(&pod)
+				if err != nil {
+					return err
+				}
+
 			}
 		}
-		if !containsAllLabels {
-			allLabels := pod.ObjectMeta.Labels
-			mapCopy(allLabels, labelsToBeAdded)
-			Logger.Debug("New labels for Pod [%v] [%v]", pod, allLabels)
-			pod.ObjectMeta.Labels = allLabels
-			_, err = client.kubeClient.CoreV1().Pods("myproject").Update(&pod)
+	}
+	return nil
+}
+
+func (client *KubeClient) RemoveUnnecessaryServices(serviceLabels string) error {
+	services, err := client.kubeClient.CoreV1().Services("myproject").List(metav1.ListOptions{
+		LabelSelector: serviceLabels,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, service := range services.Items {
+		selector := service.Spec.Selector
+		pods, err := client.kubeClient.CoreV1().Pods("myproject").List(metav1.ListOptions{
+			LabelSelector: labels.Set(selector).String(),
+		})
+		if err != nil {
+			return err
+		}
+		if len(pods.Items) == 0 {
+			Logger.Debug("Service [%v] does not have Pod attached. Removing", service)
+			err := client.kubeClient.CoreV1().Services("myproject").Delete(service.Name, &metav1.DeleteOptions{})
 			if err != nil {
 				return err
 			}
-
 		}
 	}
 	return nil
