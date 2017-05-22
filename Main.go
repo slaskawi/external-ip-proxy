@@ -8,9 +8,9 @@ import (
 	"flag"
 	"fmt"
 	"os/user"
-	"strings"
 	"time"
 	"io/ioutil"
+	"strings"
 )
 
 var (
@@ -53,10 +53,9 @@ func main() {
 		Logger.Error("Could not initialize configuration, %v", err)
 		panic(err)
 	}
-	ConfigurationAsString := string(ConfigurationAsBytes)
-	HTTPServer = http.NewHttpServer("0.0.0.0", 8888, ConfigurationAsString)
-	HTTPServer.Start()
 
+	HTTPServer = http.NewHttpServer("0.0.0.0", 8888, Configuration)
+	HTTPServer.Start()
 
 	KubernetesClient, err = kubernetes.NewKubeProxy(*KubeConfigLocation)
 	if err != nil {
@@ -69,56 +68,76 @@ func main() {
 		Logger.Info("---- Getting cluster Pods ----")
 		ClusterPods, err := KubernetesClient.GetPods(Configuration.Cluster.Labels)
 
-		if len(ClusterPods) > len(Configuration.ExternalIps.Ips) {
+		if Configuration.ExternalIps.DynamicIps == false && len(ClusterPods) > len(Configuration.ExternalIps.Ips) {
 			err = fmt.Errorf("Number of Pods [%v] is greater than number of external IPs [%v]", len(ClusterPods), len(Configuration.ExternalIps.Ips))
 			Logger.Error("%v", err)
 			panic(err)
 		}
 
 		Logger.Info("---- Updating Controller Service ----")
-		err = KubernetesClient.EnsureServiceIsRunning(
+		var ServiceIp string = ""
+		if !Configuration.ExternalIps.DynamicIps {
+			ServiceIp = Configuration.ExternalIps.ServiceIp
+		}
+		Service, err := KubernetesClient.EnsureServiceIsRunning(
 			kubernetes.ConfigurationServiceName,
 			map[string]string{kubernetes.ExternalIPsLabelPrefix: kubernetes.ConfigurationServiceLabel},
 			[]int32{8080},
 			[]int32{8080},
-			Configuration.ExternalIps.ServiceIp,
+			ServiceIp,
 			nil)
 		if err != nil {
 			Logger.Error("%v", err)
+		} else {
+			if len(Service.Spec.ExternalIPs) > 0 {
+				Configuration.RuntimeConfiguration.ServiceIp = Service.Spec.ExternalIPs[0]
+			}
 		}
 
 		Logger.Info("---- Adding Marker Labels ----")
 		for index, pod := range ClusterPods {
 			Logger.Debug("Processing Pod %v", pod.Status.PodIP)
-			ip := Configuration.ExternalIps.Ips[index]
-			ipForName := strings.Replace(ip, ".", "-", -1)
+			ipForName := fmt.Sprintf("auto-%v", index)
+			if !Configuration.ExternalIps.DynamicIps {
+				ipForName = strings.Replace(Configuration.ExternalIps.Ips[index], ".", "-", -1)
+			}
 			err = KubernetesClient.AddLabelsToPod(
 				Configuration.Cluster.Labels,
 				pod.Name,
-				map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyServiceLabel, ipForName)})
+				map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyPodLabel, ipForName)})
 			if err != nil {
 				Logger.Error("%v", err)
 			}
 		}
 
 		Logger.Info("---- Updating Proxy Services ----")
-		for index := range ClusterPods {
-			Ip := Configuration.ExternalIps.Ips[index]
-			Logger.Debug("Processing IP %v", Ip)
+		Configuration.RuntimeConfiguration.ExternalMapping = Configuration.RuntimeConfiguration.ExternalMapping[0:0]
+		for index, pod := range ClusterPods {
+			PodIp := pod.Status.PodIP
+			Logger.Debug("Processing Pod %v", PodIp)
 
-			ipForName := strings.Replace(Ip, ".", "-", -1)
-			ipAsString := Ip
-			PodLabels := map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyServiceLabel, ipForName)}
+			ServiceIp := ""
+			ipForName := fmt.Sprintf("auto-%v", index)
+			if !Configuration.ExternalIps.DynamicIps {
+				ServiceIp = Configuration.ExternalIps.Ips[index]
+				ipForName = strings.Replace(ServiceIp, ".", "-", -1)
+			}
 
-			err = KubernetesClient.EnsureServiceIsRunning(
+			PodLabels := map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyPodLabel, ipForName)}
+			Service, err = KubernetesClient.EnsureServiceIsRunning(
 				fmt.Sprintf(kubernetes.ProxyServiceName, ipForName),
 				map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyServiceLabel, ipForName)},
 				Configuration.Cluster.Ports,
 				Configuration.Cluster.Ports,
-				ipAsString,
+				ServiceIp,
 				PodLabels)
 			if err != nil {
 				Logger.Error("%v", err)
+			} else {
+				if len(Service.Spec.ExternalIPs) > 0 {
+					Mapping := fmt.Sprintf("%v:%v", PodIp, Service.Spec.ExternalIPs[0])
+					Configuration.RuntimeConfiguration.ExternalMapping = append(Configuration.RuntimeConfiguration.ExternalMapping, Mapping)
+				}
 			}
 		}
 

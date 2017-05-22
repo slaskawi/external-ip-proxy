@@ -7,27 +7,33 @@ import (
 	"html"
 	"github.com/slaskawi/external-ip-proxy/logging"
 
+	"github.com/slaskawi/external-ip-proxy/configuration"
 )
 
 type HttpServer struct {
 	IpAddress string
 	Port uint32
-	YamlToBeHosted interface{}
+	Configuration *configuration.Configuration
 }
 
 var Logger *logging.Logger = logging.NewLogger("http")
 
-func NewHttpServer(ip string, port uint32, content interface{}) *HttpServer {
+func NewHttpServer(ip string, port uint32, content *configuration.Configuration) *HttpServer {
 	return &HttpServer{
 		IpAddress: ip,
 		Port: port,
-		YamlToBeHosted: content,
+		Configuration: content,
 	}
 }
 
 func (server *HttpServer) Start() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "%v", server.YamlToBeHosted)
+		content, err := configuration.Marshal(server.Configuration);
+		if err != nil {
+			fmt.Fprintf(w, "%v", err)
+		} else {
+			fmt.Fprintf(w, "%v", content)
+		}
 	})
 	go http.ListenAndServe(fmt.Sprintf("%v:%v", server.IpAddress, server.Port), nil)
 	Logger.Info("Started HTTP Server at %v:%v", server.IpAddress, server.Port)

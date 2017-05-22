@@ -9,6 +9,7 @@ type Configuration struct {
 	ExternalIps struct {
 		ServiceIp string `yaml:"service-ip"`
 		Ips [] string `yaml:"ips"`
+		DynamicIps bool `yaml:"dynamic-ips"`
 		IpRange struct {
 			From string `yaml:"from"`
 			To string `yaml:"to"`
@@ -19,6 +20,10 @@ type Configuration struct {
 		Ports [] int32 `yaml:"ports"`
 		StatefulSet string `yaml:"stateful-set"`
 	} `yaml:"cluster"`
+	RuntimeConfiguration struct {
+		ServiceIp string `yaml:"service-ip"`
+		ExternalMapping [] string `yaml:"external-mapping"`
+	} `yaml:"runtime-configuration"`
 }
 
 func Unmarshal(data []byte) (*Configuration, error) {

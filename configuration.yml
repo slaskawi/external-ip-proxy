@@ -1,10 +1,11 @@
 ---
 external-ips:
-   service-ip: 172.29.0.1
-   ips:
-      - 172.29.0.2
-      - 172.29.0.3
-      - 172.29.0.4
+    dynamic-ips: true
+#   service-ip: 172.29.0.1
+#   ips:
+#      - 172.29.0.2
+#      - 172.29.0.3
+#      - 172.29.0.4
 cluster:
    labels:
       app: infinispan-server

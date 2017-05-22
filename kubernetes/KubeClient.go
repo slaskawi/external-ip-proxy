@@ -18,12 +18,16 @@ const (
 	ExternalIPsLabelPrefix = "extip"
 
 	Service    = "service"
+	Pod	   = "pod"
 
 	ConfigurationServiceLabel = ExternalIPsLabelPrefix + "-controller-" + Service
 	ConfigurationServiceName  = ExternalIPsLabelPrefix + "-controller-" + Service
 
 	ProxyServiceLabel = ExternalIPsLabelPrefix + "-proxy-" + Service + "-%v"
 	ProxyServiceName  = ExternalIPsLabelPrefix + "-proxy-" + Service + "-%v"
+
+	ProxyPodLabel = ExternalIPsLabelPrefix + "-pod-" + "%v"
+	ProxyPodName  = ExternalIPsLabelPrefix + "-pod-" + "%v"
 
 )
 
@@ -65,7 +69,6 @@ func (client *KubeClient) AddLabelsToPod(labels map[string]string, podName strin
 	}
 	for _, pod := range pods {
 		if podName == pod.Name {
-			Logger.Debug("Checking if Pod [%v] has all labels", pod)
 			containsAllLabels := true
 			for label := range labelsToBeAdded {
 				if _, ok := pod.ObjectMeta.Labels[label]; !ok {
@@ -117,7 +120,7 @@ func (client *KubeClient) RemoveUnnecessaryServices(serviceLabels string) error 
 	return nil
 }
 
-func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabels map[string]string, SourcePorts []int32, DestinationPorts []int32, ExternalIP string, Selector map[string]string) error {
+func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabels map[string]string, SourcePorts []int32, DestinationPorts []int32, ExternalIP string, Selector map[string]string) (*v1.Service, error) {
 	//Add more ways:
 	//https://docs.openshift.org/latest/dev_guide/getting_traffic_into_cluster.html#using-externalIP
 
@@ -125,11 +128,11 @@ func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabe
 		LabelSelector: labels.Set(ServiceLabels).String(),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	numberOfServices := len(services.Items)
 	if numberOfServices > 1 {
-		return fmt.Errorf("Found more than 1 configuration service with labels %v", ConfigurationServiceLabel)
+		return nil, fmt.Errorf("Found more than 1 configuration service with labels %v", ConfigurationServiceLabel)
 	} else if numberOfServices == 0 {
 
 		ports := make([]v1.ServicePort, len(SourcePorts))
@@ -160,15 +163,13 @@ func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabe
 				Labels: ServiceLabels,
 			},
 		})
-		if err != nil {
-			return err
-		}
-		Logger.Debug("Service created %v", service)
+		return service, err
+
 	} else {
 		Logger.Debug("The service is fine")
 	}
 
-	return nil
+	return &services.Items[0], nil
 }
 
 func (client *KubeClient) EnsurePodIsRunning(PodName string, PodLabels map[string]string, ExposedPorts []int32, Image string, Command []string, RuntimeParameters []string) error {
