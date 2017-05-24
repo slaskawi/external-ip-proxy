@@ -1,5 +1,6 @@
 ---
 external-ips:
+    namespace: default
     dynamic-ips: true
 #   service-ip: 172.29.0.1
 #   ips:

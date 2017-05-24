@@ -57,7 +57,7 @@ func main() {
 	HTTPServer = http.NewHttpServer("0.0.0.0", 8888, Configuration)
 	HTTPServer.Start()
 
-	KubernetesClient, err = kubernetes.NewKubeProxy(*KubeConfigLocation)
+	KubernetesClient, err = kubernetes.NewKubeProxy(*KubeConfigLocation, Configuration.ExternalIps.Namespace)
 	if err != nil {
 		Logger.Error("Could not initialize Kubernetes client, %v", err)
 		panic(err)
@@ -134,7 +134,10 @@ func main() {
 			if err != nil {
 				Logger.Error("%v", err)
 			} else {
-				if len(Service.Spec.ExternalIPs) > 0 {
+				if len(Service.Status.LoadBalancer.Ingress) > 0 {
+					Mapping := fmt.Sprintf("%v:%v", PodIp, Service.Status.LoadBalancer.Ingress[0].IP)
+					Configuration.RuntimeConfiguration.ExternalMapping = append(Configuration.RuntimeConfiguration.ExternalMapping, Mapping)
+				} else if len(Service.Spec.ExternalIPs) > 0 {
 					Mapping := fmt.Sprintf("%v:%v", PodIp, Service.Spec.ExternalIPs[0])
 					Configuration.RuntimeConfiguration.ExternalMapping = append(Configuration.RuntimeConfiguration.ExternalMapping, Mapping)
 				}
@@ -144,7 +147,7 @@ func main() {
 		Logger.Info("---- Removing unnecessary services ----")
 		KubernetesClient.RemoveUnnecessaryServices(kubernetes.ExternalIPsLabelPrefix)
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Minute)
 	}
 
 }

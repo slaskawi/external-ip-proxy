@@ -7,6 +7,7 @@ import (
 
 type Configuration struct {
 	ExternalIps struct {
+		Namespace string `yaml:"namespace"`
 		ServiceIp string `yaml:"service-ip"`
 		Ips [] string `yaml:"ips"`
 		DynamicIps bool `yaml:"dynamic-ips"`

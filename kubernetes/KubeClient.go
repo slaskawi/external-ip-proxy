@@ -12,6 +12,7 @@ import (
 	"github.com/slaskawi/external-ip-proxy/logging"
 	"os"
 	"reflect"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
 const (
@@ -36,10 +37,11 @@ var Logger *logging.Logger = logging.NewLogger("kubernetes")
 type KubeClient struct {
 	KubernetesConfigPath string
 	kubeClient           *kubernetes.Clientset
+	Namespace            string
 }
 
-func NewKubeProxy(KubernetesConfig string) (*KubeClient, error) {
-	client := &KubeClient{KubernetesConfigPath: KubernetesConfig}
+func NewKubeProxy(KubernetesConfig string, Namespace string) (*KubeClient, error) {
+	client := &KubeClient{KubernetesConfigPath: KubernetesConfig, Namespace: Namespace}
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -82,7 +84,7 @@ func (client *KubeClient) AddLabelsToPod(labels map[string]string, podName strin
 				mapCopy(allLabels, labelsToBeAdded)
 				Logger.Debug("New labels for Pod [%v] [%v]", pod, allLabels)
 				pod.ObjectMeta.Labels = allLabels
-				_, err = client.kubeClient.CoreV1().Pods("myproject").Update(&pod)
+				_, err = client.kubeClient.CoreV1().Pods(client.Namespace).Update(&pod)
 				if err != nil {
 					return err
 				}
@@ -94,7 +96,7 @@ func (client *KubeClient) AddLabelsToPod(labels map[string]string, podName strin
 }
 
 func (client *KubeClient) RemoveUnnecessaryServices(serviceLabels string) error {
-	services, err := client.kubeClient.CoreV1().Services("myproject").List(metav1.ListOptions{
+	services, err := client.kubeClient.CoreV1().Services(client.Namespace).List(metav1.ListOptions{
 		LabelSelector: serviceLabels,
 	})
 	if err != nil {
@@ -103,7 +105,7 @@ func (client *KubeClient) RemoveUnnecessaryServices(serviceLabels string) error 
 
 	for _, service := range services.Items {
 		selector := service.Spec.Selector
-		pods, err := client.kubeClient.CoreV1().Pods("myproject").List(metav1.ListOptions{
+		pods, err := client.kubeClient.CoreV1().Pods(client.Namespace).List(metav1.ListOptions{
 			LabelSelector: labels.Set(selector).String(),
 		})
 		if err != nil {
@@ -111,7 +113,7 @@ func (client *KubeClient) RemoveUnnecessaryServices(serviceLabels string) error 
 		}
 		if len(pods.Items) == 0 {
 			Logger.Debug("Service [%v] does not have Pod attached. Removing", service)
-			err := client.kubeClient.CoreV1().Services("myproject").Delete(service.Name, &metav1.DeleteOptions{})
+			err := client.kubeClient.CoreV1().Services(client.Namespace).Delete(service.Name, &metav1.DeleteOptions{})
 			if err != nil {
 				return err
 			}
@@ -124,7 +126,7 @@ func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabe
 	//Add more ways:
 	//https://docs.openshift.org/latest/dev_guide/getting_traffic_into_cluster.html#using-externalIP
 
-	services, err := client.kubeClient.CoreV1().Services("myproject").List(metav1.ListOptions{
+	services, err := client.kubeClient.CoreV1().Services(client.Namespace).List(metav1.ListOptions{
 		LabelSelector: labels.Set(ServiceLabels).String(),
 	})
 	if err != nil {
@@ -147,7 +149,7 @@ func (client *KubeClient) EnsureServiceIsRunning(ServiceName string, ServiceLabe
 		}
 
 		Logger.Debug("There is no service, creating one")
-		service, err := client.kubeClient.CoreV1().Services("myproject").Create(&v1.Service{
+		service, err := client.kubeClient.CoreV1().Services(client.Namespace).Create(&v1.Service{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Service",
 				APIVersion: "v1",
@@ -176,7 +178,7 @@ func (client *KubeClient) EnsurePodIsRunning(PodName string, PodLabels map[strin
 	//Add more ways:
 	//https://docs.openshift.org/latest/dev_guide/getting_traffic_into_cluster.html#using-externalIP
 
-	pods, err := client.kubeClient.CoreV1().Pods("myproject").List(metav1.ListOptions{
+	pods, err := client.kubeClient.CoreV1().Pods(client.Namespace).List(metav1.ListOptions{
 		LabelSelector: labels.Set(PodLabels).String(),
 	})
 	if err != nil {
@@ -197,7 +199,7 @@ func (client *KubeClient) EnsurePodIsRunning(PodName string, PodLabels map[strin
 		}
 
 		Logger.Debug("There is no pod, creating one")
-		pod, err := client.kubeClient.CoreV1().Pods("myproject").Create(&v1.Pod{
+		pod, err := client.kubeClient.CoreV1().Pods(client.Namespace).Create(&v1.Pod{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Pod",
 				APIVersion: "v1",
@@ -232,7 +234,7 @@ func (client *KubeClient) EnsurePodIsRunning(PodName string, PodLabels map[strin
 }
 
 func (client *KubeClient) GetPods(PodLabels map[string]string) ([]v1.Pod, error) {
-	pods, err := client.kubeClient.CoreV1().Pods("myproject").List(metav1.ListOptions{
+	pods, err := client.kubeClient.CoreV1().Pods(client.Namespace).List(metav1.ListOptions{
 		LabelSelector: labels.Set(PodLabels).String(),
 	})
 	return pods.Items, err
