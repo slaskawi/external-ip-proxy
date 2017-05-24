@@ -45,16 +45,21 @@ func NewKubeProxy(KubernetesConfig string, Namespace string) (*KubeClient, error
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		//we are in stanalone mode, let's check if the file exists
+		Logger.Debug("We are in stanalone mode, %v", err)
+		Logger.Debug("Checking if config file exists, %v", KubernetesConfig)
 		if _, err := os.Stat(KubernetesConfig); err != nil {
+			Logger.Debug("Config file does not exist", err)
 			return nil, err
 		}
+
+		config, err = clientcmd.BuildConfigFromFlags("", client.KubernetesConfigPath)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		Logger.Debug("We are inside Kubernetes, %v", config)
 	}
 
-	config, err = clientcmd.BuildConfigFromFlags("", client.KubernetesConfigPath)
-	if err != nil {
-		return nil, err
-	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
