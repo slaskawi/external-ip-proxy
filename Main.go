@@ -14,140 +14,137 @@ import (
 )
 
 var (
-	KubeConfigLocation = flag.String("c", "", "Kubernetes configuration")
+	kubeConfigLocationFlag = flag.String("c", "", "Kubernetes runtimeConfiguration")
+	logLevelFlag = flag.String("loglevel", "Debug", "Log level, e.g. Debug")
+	configurationPathFlag = flag.String("runtimeConfiguration", "./configuration.yml", "Path to runtimeConfiguration, e.g. ./runtimeConfiguration.yml")
 
-	LogLevel = flag.String("loglevel", "Debug", "Log level, e.g. Debug")
+	logger = logging.NewLogger("main")
 
-	ConfigurationPath = flag.String("configuration", "./configuration.yml", "Path to configuration, e.g. ./configuration.yml")
-
-	Logger = logging.NewLogger("main")
-
-	Configuration    *configuration.Configuration
-	KubernetesClient *kubernetes.KubeClient
-	HTTPServer *http.HttpServer
+	runtimeConfiguration *configuration.Configuration
+	kubernetesClient     *kubernetes.KubeClient
+	httpServer           *http.HttpServer
 )
 
 func main() {
-	Logger.Info("---- Initialization ----")
+	logger.Info("---- Initialization ----")
 	flag.Parse()
-	logging.LoggingFromLevel = logging.LogLevel(*LogLevel)
+	logging.LoggingFromLevel = logging.LogLevel(*logLevelFlag)
 
-	if len(*KubeConfigLocation) == 0 {
+	if len(*kubeConfigLocationFlag) == 0 {
 		usr, err := user.Current()
 		if err != nil {
-			Logger.Warning("Could not find current user %v", err)
+			logger.Warning("Could not find current user %v", err)
 		} else {
 			path := fmt.Sprintf("%v/.kube/config", usr.HomeDir)
-			KubeConfigLocation = &path
+			kubeConfigLocationFlag = &path
 		}
 	}
 
-	ConfigurationAsBytes, err := ioutil.ReadFile(*ConfigurationPath)
+	ConfigurationAsBytes, err := ioutil.ReadFile(*configurationPathFlag)
 	if err != nil {
-		Logger.Error("Could not find configuration, %v", err)
+		logger.Error("Could not find configuration, %v", err)
 		panic(err)
 	}
 
-	Configuration, err = configuration.Unmarshal(ConfigurationAsBytes)
+	runtimeConfiguration, err = configuration.Unmarshal(ConfigurationAsBytes)
 	if err != nil {
-		Logger.Error("Could not initialize configuration, %v", err)
+		logger.Error("Could not initialize configuration, %v", err)
 		panic(err)
 	}
 
-	HTTPServer = http.NewHttpServer("0.0.0.0", 8888, Configuration)
-	HTTPServer.Start()
+	httpServer = http.NewHttpServer("0.0.0.0", 8888, runtimeConfiguration)
+	httpServer.Start()
 
-	KubernetesClient, err = kubernetes.NewKubeProxy(*KubeConfigLocation, Configuration.ExternalIps.Namespace)
+	kubernetesClient, err = kubernetes.NewKubeProxy(*kubeConfigLocationFlag, runtimeConfiguration.ExternalIps.Namespace)
 	if err != nil {
-		Logger.Error("Could not initialize Kubernetes client, %v", err)
+		logger.Error("Could not initialize Kubernetes client, %v", err)
 		panic(err)
 	}
 
-	Logger.Info("Configuration: %v", Configuration)
+	logger.Info("runtimeConfiguration: %v", runtimeConfiguration)
 	for {
-		Logger.Info("---- Getting cluster Pods ----")
-		ClusterPods, err := KubernetesClient.GetPods(Configuration.Cluster.Labels)
+		logger.Info("---- Getting cluster Pods ----")
+		ClusterPods, err := kubernetesClient.GetPods(runtimeConfiguration.Cluster.Labels)
 
-		if Configuration.ExternalIps.DynamicIps == false && len(ClusterPods) > len(Configuration.ExternalIps.Ips) {
-			err = fmt.Errorf("Number of Pods [%v] is greater than number of external IPs [%v]", len(ClusterPods), len(Configuration.ExternalIps.Ips))
-			Logger.Error("%v", err)
+		if runtimeConfiguration.ExternalIps.DynamicIps == false && len(ClusterPods) > len(runtimeConfiguration.ExternalIps.Ips) {
+			err = fmt.Errorf("Number of Pods [%v] is greater than number of external IPs [%v]", len(ClusterPods), len(runtimeConfiguration.ExternalIps.Ips))
+			logger.Error("%v", err)
 			panic(err)
 		}
 
-		Logger.Info("---- Updating Controller Service ----")
+		logger.Info("---- Updating Controller Service ----")
 		var ServiceIp string = ""
-		if !Configuration.ExternalIps.DynamicIps {
-			ServiceIp = Configuration.ExternalIps.ServiceIp
+		if len(runtimeConfiguration.ExternalIps.ServiceIp) > 0 {
+			ServiceIp = runtimeConfiguration.ExternalIps.ServiceIp
 		}
-		Service, err := KubernetesClient.EnsureServiceIsRunning(
+		Service, err := kubernetesClient.EnsureServiceIsRunning(
 			kubernetes.ConfigurationServiceName,
 			map[string]string{kubernetes.ExternalIPsLabelPrefix: kubernetes.ConfigurationServiceLabel},
-			[]int32{8080},
-			[]int32{8080},
+			[]int32{8888},
+			[]int32{8888},
 			ServiceIp,
 			nil)
 		if err != nil {
-			Logger.Error("%v", err)
+			logger.Error("%v", err)
 		} else {
 			if len(Service.Spec.ExternalIPs) > 0 {
-				Configuration.RuntimeConfiguration.ServiceIp = Service.Spec.ExternalIPs[0]
+				runtimeConfiguration.RuntimeConfiguration.ServiceIp = Service.Spec.ExternalIPs[0]
 			}
 		}
 
-		Logger.Info("---- Adding Marker Labels ----")
+		logger.Info("---- Adding Marker Labels ----")
 		for index, pod := range ClusterPods {
-			Logger.Debug("Processing Pod %v", pod.Status.PodIP)
+			logger.Debug("Processing Pod %v", pod.Status.PodIP)
 			ipForName := fmt.Sprintf("auto-%v", index)
-			if !Configuration.ExternalIps.DynamicIps {
-				ipForName = strings.Replace(Configuration.ExternalIps.Ips[index], ".", "-", -1)
+			if !runtimeConfiguration.ExternalIps.DynamicIps {
+				ipForName = strings.Replace(runtimeConfiguration.ExternalIps.Ips[index], ".", "-", -1)
 			}
-			err = KubernetesClient.AddLabelsToPod(
-				Configuration.Cluster.Labels,
+			err = kubernetesClient.AddLabelsToPod(
+				runtimeConfiguration.Cluster.Labels,
 				pod.Name,
 				map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyPodLabel, ipForName)})
 			if err != nil {
-				Logger.Error("%v", err)
+				logger.Error("%v", err)
 			}
 		}
 
-		Logger.Info("---- Updating Proxy Services ----")
-		Configuration.RuntimeConfiguration.ExternalMapping = Configuration.RuntimeConfiguration.ExternalMapping[0:0]
+		logger.Info("---- Updating Proxy Services ----")
+		runtimeConfiguration.RuntimeConfiguration.ExternalMapping = runtimeConfiguration.RuntimeConfiguration.ExternalMapping[0:0]
 		for index, pod := range ClusterPods {
 			PodIp := pod.Status.PodIP
-			Logger.Debug("Processing Pod %v", PodIp)
+			logger.Debug("Processing Pod %v", PodIp)
 
 			ServiceIp := ""
 			ipForName := fmt.Sprintf("auto-%v", index)
-			if !Configuration.ExternalIps.DynamicIps {
-				ServiceIp = Configuration.ExternalIps.Ips[index]
+			if !runtimeConfiguration.ExternalIps.DynamicIps {
+				ServiceIp = runtimeConfiguration.ExternalIps.Ips[index]
 				ipForName = strings.Replace(ServiceIp, ".", "-", -1)
 			}
 
 			PodLabels := map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyPodLabel, ipForName)}
-			Service, err = KubernetesClient.EnsureServiceIsRunning(
+			Service, err = kubernetesClient.EnsureServiceIsRunning(
 				fmt.Sprintf(kubernetes.ProxyServiceName, ipForName),
 				map[string]string{kubernetes.ExternalIPsLabelPrefix: fmt.Sprintf(kubernetes.ProxyServiceLabel, ipForName)},
-				Configuration.Cluster.Ports,
-				Configuration.Cluster.Ports,
+				runtimeConfiguration.Cluster.Ports,
+				runtimeConfiguration.Cluster.Ports,
 				ServiceIp,
 				PodLabels)
 			if err != nil {
-				Logger.Error("%v", err)
+				logger.Error("%v", err)
 			} else {
 				if len(Service.Status.LoadBalancer.Ingress) > 0 {
 					Mapping := fmt.Sprintf("%v:%v", PodIp, Service.Status.LoadBalancer.Ingress[0].IP)
-					Configuration.RuntimeConfiguration.ExternalMapping = append(Configuration.RuntimeConfiguration.ExternalMapping, Mapping)
+					runtimeConfiguration.RuntimeConfiguration.ExternalMapping = append(runtimeConfiguration.RuntimeConfiguration.ExternalMapping, Mapping)
 				} else if len(Service.Spec.ExternalIPs) > 0 {
 					Mapping := fmt.Sprintf("%v:%v", PodIp, Service.Spec.ExternalIPs[0])
-					Configuration.RuntimeConfiguration.ExternalMapping = append(Configuration.RuntimeConfiguration.ExternalMapping, Mapping)
+					runtimeConfiguration.RuntimeConfiguration.ExternalMapping = append(runtimeConfiguration.RuntimeConfiguration.ExternalMapping, Mapping)
 				}
 			}
 		}
 
-		Logger.Info("---- Removing unnecessary services ----")
-		KubernetesClient.RemoveUnnecessaryServices(kubernetes.ExternalIPsLabelPrefix)
+		logger.Info("---- Removing unnecessary services ----")
+		kubernetesClient.RemoveUnnecessaryServices(kubernetes.ExternalIPsLabelPrefix)
 
 		time.Sleep(5 * time.Minute)
 	}
-
 }
