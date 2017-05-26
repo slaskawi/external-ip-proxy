@@ -20,6 +20,10 @@ public class DiscoveryInfo {
       return Collections.unmodifiableMap(addresses);
    }
 
+   public String getExternalAddress(String internalAddress) {
+      return addresses.get(internalAddress);
+   }
+
    @Override
    public String toString() {
       return "DiscoveryInfo{" +

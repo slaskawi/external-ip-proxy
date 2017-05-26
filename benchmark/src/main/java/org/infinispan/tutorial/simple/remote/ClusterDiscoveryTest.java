@@ -3,6 +3,7 @@ package org.infinispan.tutorial.simple.remote;
 import java.io.IOException;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 
 /**
@@ -11,25 +12,15 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 public class ClusterDiscoveryTest {
 
    public static void main(String[] args) throws IOException {
-      ClusterDiscoveryAgent agent = new ClusterDiscoveryAgent("http://localhost:8888");
-      DiscoveryInfo discover = agent.discover();
-      System.out.println(discover);
-
-
       ConfigurationBuilder hotRodConfiguration = new ConfigurationBuilder();
+      hotRodConfiguration.addServer()
+            .host("104.155.113.51").port(11222)
+            .addressMapping(CloudAddressMapper.class);
 
-      for (String internalAddress : discover.getAddresses().keySet()) {
-         String externalAddress = discover.getAddresses().get(internalAddress);
-
-         hotRodConfiguration.addServer().host(externalAddress);
-      }
-
-      RemoteCacheManager remoteCacheManager = new RemoteCacheManager(hotRodConfiguration.build());
+      Configuration configuration = hotRodConfiguration.build();
+      RemoteCacheManager remoteCacheManager = new RemoteCacheManager(configuration);
       remoteCacheManager.getCache().put("test", "test");
-      remoteCacheManager.getCache().get("test");
-
-
-
+      System.out.println(remoteCacheManager.getCache().get("test"));
    }
 
 }

@@ -21,7 +21,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 public class InfinispanRemote {
 
-   private static final int MEASUREMENT_ITERATIONS_COUNT = 31;
+   private static final int MEASUREMENT_ITERATIONS_COUNT = 1;
    private static final int WARMUP_ITERATIONS_COUNT = 0;
 
    public static void main(String[] args) throws RunnerException {
@@ -48,7 +48,7 @@ public class InfinispanRemote {
             "true",
             "false"
       })
-      public boolean useLoadBalancerPerPod;
+      public boolean useSmartBalancing;
 
       RemoteCacheManager cacheManager;
       RemoteCache<String, String> cache;
@@ -56,11 +56,19 @@ public class InfinispanRemote {
       @Setup
       public void setup() throws Exception {
          ConfigurationBuilder builder = new ConfigurationBuilder();
-         builder.clientIntelligence(ClientIntelligence.BASIC);
-         if(useLoadBalancerPerPod) {
-            builder.addServer().host("172.29.0.2").port(11222);
+
+         if(useSmartBalancing) {
+            builder.addServer()
+                  .host("104.155.113.51").port(11222)
+                  .host("35.187.61.111").port(11222)
+                  .host("104.199.61.36").port(11222)
+                  .addressMapping(CloudAddressMapper.class);
          } else {
-            builder.addServer().host("172.17.0.3").port(11222);
+            builder.clientIntelligence(ClientIntelligence.BASIC);
+            builder.addServer()
+                  .host("104.155.113.51").port(11222)
+                  .host("35.187.61.111").port(11222)
+                  .host("104.199.61.36").port(11222);
          }
          cacheManager = new RemoteCacheManager(builder.build());
          cache = cacheManager.getCache();
@@ -74,17 +82,17 @@ public class InfinispanRemote {
          cacheManager.stop();
       }
 
-      @Benchmark
-      public void perform1000Puts() throws Exception {
-         for (int i = 0; i < 1_000; ++i) {
-            String key = UUID.randomUUID().toString();
-            cache.put(key, key);
-         }
-      }
+//      @Benchmark
+//      public void perform1000Puts() throws Exception {
+//         for (int i = 0; i < 1_000; ++i) {
+//            String key = UUID.randomUUID().toString();
+//            cache.put(key, key);
+//         }
+//      }
 
       @Benchmark
       public void perform1000PutsAndGets() throws Exception {
-         for (int i = 0; i < 1_000; ++i) {
+         for (int i = 0; i < 1_500; ++i) {
             String key = UUID.randomUUID().toString();
             cache.put(key, key);
             cache.get(key);
