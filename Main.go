@@ -83,7 +83,7 @@ func main() {
 			[]int32{8888},
 			[]int32{8888},
 			ServiceIp,
-			nil)
+			map[string]string{kubernetes.DefaultServiceAppPrefix: kubernetes.DefaultServiceAppName})
 		if err != nil {
 			logger.Error("%v", err)
 		} else {

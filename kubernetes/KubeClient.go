@@ -16,6 +16,9 @@ import (
 )
 
 const (
+	DefaultServiceAppPrefix = "app"
+	DefaultServiceAppName = "external-ip-proxy"
+
 	ExternalIPsLabelPrefix = "extip"
 
 	Service    = "service"
