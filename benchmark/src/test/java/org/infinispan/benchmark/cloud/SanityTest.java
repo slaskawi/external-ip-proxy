@@ -1,4 +1,4 @@
-package org.infinispan.tutorial.simple.remote;
+package org.infinispan.benchmark.cloud;
 
 import java.io.IOException;
 
@@ -6,10 +6,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 
-/**
- * Created by slaskawi on 5/22/17.
- */
-public class ClusterDiscoveryTest {
+public class SanityTest {
 
    public static void main(String[] args) throws IOException {
       ConfigurationBuilder hotRodConfiguration = new ConfigurationBuilder();
@@ -22,5 +19,4 @@ public class ClusterDiscoveryTest {
       remoteCacheManager.getCache().put("test", "test");
       System.out.println(remoteCacheManager.getCache().get("test"));
    }
-
 }

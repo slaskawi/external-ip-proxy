@@ -1,0 +1,249 @@
+kubectl get pods -o wide
+NAME                                 READY     STATUS    RESTARTS   AGE       IP         NODE
+infinispan-server-2054912319-4jd2k   1/1       Running   0          43s       10.0.5.5   gke-cluster-1-default-pool-222f78cf-w3lv
+infinispan-server-2054912319-c8wjd   1/1       Running   0          43s       10.0.6.5   gke-cluster-1-default-pool-222f78cf-lclx
+infinispan-server-2054912319-st7kp   1/1       Running   0          43s       10.0.7.5   gke-cluster-1-default-pool-222f78cf-w3h1
+
+## All pods are on different physical nodes.
+# JMH 1.14.1 (released 251 days ago, please consider updating!)
+# VM version: JDK 1.8.0_111-internal, VM 25.111-b14
+# VM invoker: /usr/lib/jvm/java-1.8-openjdk/jre/bin/java
+# VM options: -Djava.net.preferIPv4Stack=true
+# Warmup: 5 iterations, 1 s each
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.benchmark.cloud.Benchmark.BenchmarkState.perform1000Puts
+# Parameters: (useSmartBalancing = true)
+
+# Run progress: 0.00% complete, ETA 00:02:24
+# Fork: 1 of 1
+# Warmup Iteration   1: discoveryInfo = DiscoveryInfo{addresses={10.0.5.5=104.155.17.202, 10.0.7.5=130.211.49.127, 10.0.6.5=104.199.78.28}}
+1402.274 ms/op
+# Warmup Iteration   2: 1012.170 ms/op
+# Warmup Iteration   3: 1005.655 ms/op
+# Warmup Iteration   4: 1174.407 ms/op
+# Warmup Iteration   5: 1148.667 ms/op
+Iteration   1: 1131.983 ms/op
+Iteration   2: 1062.398 ms/op
+Iteration   3: 1064.195 ms/op
+Iteration   4: 944.987 ms/op
+Iteration   5: 1077.456 ms/op
+Iteration   6: 708.604 ms/op
+Iteration   7: 659.427 ms/op
+Iteration   8: 724.630 ms/op
+Iteration   9: 730.699 ms/op
+Iteration  10: 704.778 ms/op
+Iteration  11: 703.422 ms/op
+Iteration  12: 704.393 ms/op
+Iteration  13: 726.621 ms/op
+Iteration  14: 754.018 ms/op
+Iteration  15: 735.759 ms/op
+Iteration  16: 655.347 ms/op
+Iteration  17: 680.485 ms/op
+Iteration  18: 730.884 ms/op
+Iteration  19: 713.275 ms/op
+Iteration  20: 838.059 ms/op
+Iteration  21: 843.839 ms/op
+Iteration  22: 757.520 ms/op
+Iteration  23: 755.603 ms/op
+Iteration  24: 673.283 ms/op
+Iteration  25: 640.548 ms/op
+Iteration  26: 712.242 ms/op
+Iteration  27: 723.321 ms/op
+Iteration  28: 759.880 ms/op
+Iteration  29: 702.599 ms/op
+Iteration  30: 809.232 ms/op
+Iteration  31: 736.766 ms/op
+
+
+Result "perform1000Puts":
+  779.557 ±(99.9%) 87.575 ms/op [Average]
+  (min, avg, max) = (640.548, 779.557, 1131.983), stdev = 133.737
+  CI (99.9%): [691.981, 867.132] (assumes normal distribution)
+
+
+# JMH 1.14.1 (released 251 days ago, please consider updating!)
+# VM version: JDK 1.8.0_111-internal, VM 25.111-b14
+# VM invoker: /usr/lib/jvm/java-1.8-openjdk/jre/bin/java
+# VM options: -Djava.net.preferIPv4Stack=true
+# Warmup: 5 iterations, 1 s each
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.benchmark.cloud.Benchmark.BenchmarkState.perform1000Puts
+# Parameters: (useSmartBalancing = false)
+
+# Run progress: 25.00% complete, ETA 00:03:01
+# Fork: 1 of 1
+# Warmup Iteration   1: 1371.755 ms/op
+# Warmup Iteration   2: 1254.034 ms/op
+# Warmup Iteration   3: 1148.015 ms/op
+# Warmup Iteration   4: 1056.710 ms/op
+# Warmup Iteration   5: 1062.551 ms/op
+Iteration   1: 1115.655 ms/op
+Iteration   2: 1078.875 ms/op
+Iteration   3: 1147.470 ms/op
+Iteration   4: 1072.563 ms/op
+Iteration   5: 1005.207 ms/op
+Iteration   6: 989.449 ms/op
+Iteration   7: 1076.408 ms/op
+Iteration   8: 1078.737 ms/op
+Iteration   9: 1100.124 ms/op
+Iteration  10: 1093.762 ms/op
+Iteration  11: 1096.804 ms/op
+Iteration  12: 1037.567 ms/op
+Iteration  13: 1110.467 ms/op
+Iteration  14: 1038.152 ms/op
+Iteration  15: 1091.768 ms/op
+Iteration  16: 968.924 ms/op
+Iteration  17: 1043.295 ms/op
+Iteration  18: 1048.606 ms/op
+Iteration  19: 1164.783 ms/op
+Iteration  20: 1082.553 ms/op
+Iteration  21: 1011.742 ms/op
+Iteration  22: 1225.552 ms/op
+Iteration  23: 1120.462 ms/op
+Iteration  24: 1123.638 ms/op
+Iteration  25: 1007.362 ms/op
+Iteration  26: 1047.086 ms/op
+Iteration  27: 982.505 ms/op
+Iteration  28: 1048.836 ms/op
+Iteration  29: 1106.657 ms/op
+Iteration  30: 1081.567 ms/op
+Iteration  31: 1048.044 ms/op
+
+
+Result "perform1000Puts":
+  1072.407 ±(99.9%) 36.502 ms/op [Average]
+  (min, avg, max) = (968.924, 1072.407, 1225.552), stdev = 55.743
+  CI (99.9%): [1035.905, 1108.909] (assumes normal distribution)
+
+
+# JMH 1.14.1 (released 251 days ago, please consider updating!)
+# VM version: JDK 1.8.0_111-internal, VM 25.111-b14
+# VM invoker: /usr/lib/jvm/java-1.8-openjdk/jre/bin/java
+# VM options: -Djava.net.preferIPv4Stack=true
+# Warmup: 5 iterations, 1 s each
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.benchmark.cloud.Benchmark.BenchmarkState.perform1000PutsAndGets
+# Parameters: (useSmartBalancing = true)
+
+# Run progress: 50.00% complete, ETA 00:01:54
+# Fork: 1 of 1
+# Warmup Iteration   1: discoveryInfo = DiscoveryInfo{addresses={10.0.5.5=104.155.17.202, 10.0.7.5=130.211.49.127, 10.0.6.5=104.199.78.28}}
+2050.426 ms/op
+# Warmup Iteration   2: 1511.566 ms/op
+# Warmup Iteration   3: 1748.882 ms/op
+# Warmup Iteration   4: 1578.104 ms/op
+# Warmup Iteration   5: 1468.596 ms/op
+Iteration   1: 1394.019 ms/op
+Iteration   2: 1388.852 ms/op
+Iteration   3: 1412.503 ms/op
+Iteration   4: 1281.432 ms/op
+Iteration   5: 1457.583 ms/op
+Iteration   6: 1437.987 ms/op
+Iteration   7: 1417.770 ms/op
+Iteration   8: 1398.931 ms/op
+Iteration   9: 1303.844 ms/op
+Iteration  10: 1394.367 ms/op
+Iteration  11: 1462.698 ms/op
+Iteration  12: 1361.781 ms/op
+Iteration  13: 1435.064 ms/op
+Iteration  14: 1476.127 ms/op
+Iteration  15: 1418.995 ms/op
+Iteration  16: 1364.340 ms/op
+Iteration  17: 1402.033 ms/op
+Iteration  18: 1399.931 ms/op
+Iteration  19: 1587.641 ms/op
+Iteration  20: 1488.814 ms/op
+Iteration  21: 1640.250 ms/op
+Iteration  22: 1667.591 ms/op
+Iteration  23: 1700.784 ms/op
+Iteration  24: 1576.403 ms/op
+Iteration  25: 1515.023 ms/op
+Iteration  26: 1500.902 ms/op
+Iteration  27: 1494.588 ms/op
+Iteration  28: 1420.036 ms/op
+Iteration  29: 1477.290 ms/op
+Iteration  30: 1464.526 ms/op
+Iteration  31: 1564.691 ms/op
+
+
+Result "perform1000PutsAndGets":
+  1461.510 ±(99.9%) 64.330 ms/op [Average]
+  (min, avg, max) = (1281.432, 1461.510, 1700.784), stdev = 98.239
+  CI (99.9%): [1397.179, 1525.840] (assumes normal distribution)
+
+
+# JMH 1.14.1 (released 251 days ago, please consider updating!)
+# VM version: JDK 1.8.0_111-internal, VM 25.111-b14
+# VM invoker: /usr/lib/jvm/java-1.8-openjdk/jre/bin/java
+# VM options: -Djava.net.preferIPv4Stack=true
+# Warmup: 5 iterations, 1 s each
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.benchmark.cloud.Benchmark.BenchmarkState.perform1000PutsAndGets
+# Parameters: (useSmartBalancing = false)
+
+# Run progress: 75.00% complete, ETA 00:00:59
+# Fork: 1 of 1
+# Warmup Iteration   1: 2625.644 ms/op
+# Warmup Iteration   2: 2125.869 ms/op
+# Warmup Iteration   3: 2246.092 ms/op
+# Warmup Iteration   4: 2256.067 ms/op
+# Warmup Iteration   5: 2375.774 ms/op
+Iteration   1: 2169.892 ms/op
+Iteration   2: 2180.086 ms/op
+Iteration   3: 2038.609 ms/op
+Iteration   4: 2157.826 ms/op
+Iteration   5: 2150.398 ms/op
+Iteration   6: 2186.188 ms/op
+Iteration   7: 2116.751 ms/op
+Iteration   8: 2058.024 ms/op
+Iteration   9: 2041.729 ms/op
+Iteration  10: 2153.114 ms/op
+Iteration  11: 2248.805 ms/op
+Iteration  12: 2328.668 ms/op
+Iteration  13: 2219.456 ms/op
+Iteration  14: 2301.052 ms/op
+Iteration  15: 2076.128 ms/op
+Iteration  16: 2053.074 ms/op
+Iteration  17: 2011.309 ms/op
+Iteration  18: 2165.812 ms/op
+Iteration  19: 2202.630 ms/op
+Iteration  20: 2102.408 ms/op
+Iteration  21: 2146.431 ms/op
+Iteration  22: 2153.059 ms/op
+Iteration  23: 2010.229 ms/op
+Iteration  24: 2134.811 ms/op
+Iteration  25: 2120.769 ms/op
+Iteration  26: 2124.608 ms/op
+Iteration  27: 2163.671 ms/op
+Iteration  28: 1963.457 ms/op
+Iteration  29: 1916.155 ms/op
+Iteration  30: 2163.848 ms/op
+Iteration  31: 3221.080 ms/op
+
+
+Result "perform1000PutsAndGets":
+  2163.873 ±(99.9%) 141.332 ms/op [Average]
+  (min, avg, max) = (1916.155, 2163.873, 3221.080), stdev = 215.829
+  CI (99.9%): [2022.541, 2305.206] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:04:26
+
+Benchmark                                        (useSmartBalancing)  Mode  Cnt     Score     Error  Units
+Benchmark.BenchmarkState.perform1000Puts                        true  avgt   31   779.557 ±  87.575  ms/op
+Benchmark.BenchmarkState.perform1000Puts                       false  avgt   31  1072.407 ±  36.502  ms/op
+Benchmark.BenchmarkState.perform1000PutsAndGets                 true  avgt   31  1461.510 ±  64.330  ms/op
+Benchmark.BenchmarkState.perform1000PutsAndGets                false  avgt   31  2163.873 ± 141.332  ms/op
+

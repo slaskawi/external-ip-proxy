@@ -1,4 +1,4 @@
-package org.infinispan.tutorial.simple.remote;
+package org.infinispan.benchmark.cloud;
 
 import java.io.IOException;
 import java.net.URL;

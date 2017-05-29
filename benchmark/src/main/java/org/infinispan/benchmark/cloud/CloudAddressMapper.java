@@ -1,4 +1,4 @@
-package org.infinispan.tutorial.simple.remote;
+package org.infinispan.benchmark.cloud;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -20,7 +20,7 @@ public class CloudAddressMapper implements AddressMapper {
    public CloudAddressMapper() {
 
       try {
-         ClusterDiscoveryAgent agent = new ClusterDiscoveryAgent("http://104.199.48.50:8888");
+         ClusterDiscoveryAgent agent = new ClusterDiscoveryAgent("http://35.187.73.162:8888");
          discoveryInfo = agent.discover();
          System.out.println("discoveryInfo = " + discoveryInfo);
       } catch (IOException e) {

@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: infinispan-benchmark
+spec:
+  template:
+    metadata:
+      labels:
+        app: infinispan-benchmark
+    spec:
+      containers:
+      - name: infinispan-benchmark
+        image: slaskawi/infinispan-performance-benchmark:1.0.0

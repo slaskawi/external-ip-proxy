@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: infinispan-server
+  name: infinispan-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: infinispan-server
+  template:
+    metadata:
+      labels:
+        app: infinispan-server
+    spec:
+      containers:
+      - image: jboss/infinispan-server:9.0.0.Final
+        args:
+        - "cloud"
+        - "-Djboss.default.jgroups.stack=kubernetes"
+        env:
+        - name: OPENSHIFT_KUBE_PING_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        ports:
+        - containerPort: 11222
+          protocol: TCP
+        - containerPort: 8888
+          protocol: TCP
+        name: infinispan-server
+        terminationMessagePath: /dev/termination-log
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

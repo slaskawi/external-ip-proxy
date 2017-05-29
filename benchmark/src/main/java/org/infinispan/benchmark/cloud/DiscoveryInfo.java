@@ -1,4 +1,4 @@
-package org.infinispan.tutorial.simple.remote;
+package org.infinispan.benchmark.cloud;
 
 import java.util.Collections;
 import java.util.HashMap;

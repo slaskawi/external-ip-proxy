@@ -1,4 +1,4 @@
-package org.infinispan.tutorial.simple.remote;
+package org.infinispan.benchmark.cloud;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -7,7 +7,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
-import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
@@ -19,15 +18,15 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-public class InfinispanRemote {
+public class Benchmark {
 
-   private static final int MEASUREMENT_ITERATIONS_COUNT = 1;
-   private static final int WARMUP_ITERATIONS_COUNT = 0;
+   private static final int MEASUREMENT_ITERATIONS_COUNT = 31;
+   private static final int WARMUP_ITERATIONS_COUNT = 5;
 
    public static void main(String[] args) throws RunnerException {
 
       Options opt = new OptionsBuilder()
-            .include(InfinispanRemote.class.getName() + ".*")
+            .include(Benchmark.class.getName() + ".*")
             .mode(Mode.AverageTime)
             .timeUnit(TimeUnit.MILLISECONDS)
             .warmupIterations(WARMUP_ITERATIONS_COUNT)
@@ -59,16 +58,16 @@ public class InfinispanRemote {
 
          if(useSmartBalancing) {
             builder.addServer()
-                  .host("104.155.113.51").port(11222)
-                  .host("35.187.61.111").port(11222)
-                  .host("104.199.61.36").port(11222)
+                  .host("104.155.17.202").port(11222)
+                  .host("104.199.78.28").port(11222)
+                  .host("130.211.49.127").port(11222)
                   .addressMapping(CloudAddressMapper.class);
          } else {
             builder.clientIntelligence(ClientIntelligence.BASIC);
             builder.addServer()
-                  .host("104.155.113.51").port(11222)
-                  .host("35.187.61.111").port(11222)
-                  .host("104.199.61.36").port(11222);
+                  .host("104.155.17.202").port(11222)
+                  .host("104.199.78.28").port(11222)
+                  .host("130.211.49.127").port(11222);
          }
          cacheManager = new RemoteCacheManager(builder.build());
          cache = cacheManager.getCache();
@@ -82,15 +81,15 @@ public class InfinispanRemote {
          cacheManager.stop();
       }
 
-//      @Benchmark
-//      public void perform1000Puts() throws Exception {
-//         for (int i = 0; i < 1_000; ++i) {
-//            String key = UUID.randomUUID().toString();
-//            cache.put(key, key);
-//         }
-//      }
+      @org.openjdk.jmh.annotations.Benchmark
+      public void perform1000Puts() throws Exception {
+         for (int i = 0; i < 1_000; ++i) {
+            String key = UUID.randomUUID().toString();
+            cache.put(key, key);
+         }
+      }
 
-      @Benchmark
+      @org.openjdk.jmh.annotations.Benchmark
       public void perform1000PutsAndGets() throws Exception {
          for (int i = 0; i < 1_500; ++i) {
             String key = UUID.randomUUID().toString();
