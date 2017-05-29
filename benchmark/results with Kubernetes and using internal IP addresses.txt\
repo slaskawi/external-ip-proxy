@@ -1,0 +1,119 @@
+# JMH 1.14.1 (released 251 days ago, please consider updating!)
+# VM version: JDK 1.8.0_111-internal, VM 25.111-b14
+# VM invoker: /usr/lib/jvm/java-1.8-openjdk/jre/bin/java
+# VM options: -Djava.net.preferIPv4Stack=true
+# Warmup: 5 iterations, 1 s each
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.benchmark.cloud.Benchmark.BenchmarkState.perform1000Puts
+
+# Run progress: 0.00% complete, ETA 00:01:12
+# Fork: 1 of 1
+# Warmup Iteration   1: 820.347 ms/op
+# Warmup Iteration   2: 674.308 ms/op
+# Warmup Iteration   3: 682.698 ms/op
+# Warmup Iteration   4: 755.359 ms/op
+# Warmup Iteration   5: 687.562 ms/op
+Iteration   1: 688.781 ms/op
+Iteration   2: 702.187 ms/op
+Iteration   3: 656.376 ms/op
+Iteration   4: 704.598 ms/op
+Iteration   5: 676.624 ms/op
+Iteration   6: 692.494 ms/op
+Iteration   7: 651.790 ms/op
+Iteration   8: 662.264 ms/op
+Iteration   9: 677.802 ms/op
+Iteration  10: 657.687 ms/op
+Iteration  11: 646.336 ms/op
+Iteration  12: 687.440 ms/op
+Iteration  13: 680.675 ms/op
+Iteration  14: 689.508 ms/op
+Iteration  15: 631.147 ms/op
+Iteration  16: 639.803 ms/op
+Iteration  17: 631.881 ms/op
+Iteration  18: 679.743 ms/op
+Iteration  19: 647.547 ms/op
+Iteration  20: 658.668 ms/op
+Iteration  21: 665.417 ms/op
+Iteration  22: 669.795 ms/op
+Iteration  23: 706.882 ms/op
+Iteration  24: 670.700 ms/op
+Iteration  25: 672.397 ms/op
+Iteration  26: 669.249 ms/op
+Iteration  27: 668.726 ms/op
+Iteration  28: 690.016 ms/op
+Iteration  29: 657.974 ms/op
+Iteration  30: 739.383 ms/op
+Iteration  31: 727.683 ms/op
+
+
+Result "perform1000Puts":
+  674.244 ±(99.9%) 16.654 ms/op [Average]
+  (min, avg, max) = (631.147, 674.244, 739.383), stdev = 25.432
+  CI (99.9%): [657.591, 690.898] (assumes normal distribution)
+
+
+# JMH 1.14.1 (released 251 days ago, please consider updating!)
+# VM version: JDK 1.8.0_111-internal, VM 25.111-b14
+# VM invoker: /usr/lib/jvm/java-1.8-openjdk/jre/bin/java
+# VM options: -Djava.net.preferIPv4Stack=true
+# Warmup: 5 iterations, 1 s each
+# Measurement: 31 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: org.infinispan.benchmark.cloud.Benchmark.BenchmarkState.perform1000PutsAndGets
+
+# Run progress: 50.00% complete, ETA 00:00:58
+# Fork: 1 of 1
+# Warmup Iteration   1: 1766.884 ms/op
+# Warmup Iteration   2: 1327.261 ms/op
+# Warmup Iteration   3: 1293.455 ms/op
+# Warmup Iteration   4: 1414.329 ms/op
+# Warmup Iteration   5: 1398.942 ms/op
+Iteration   1: 1413.534 ms/op
+Iteration   2: 1393.919 ms/op
+Iteration   3: 2356.081 ms/op
+Iteration   4: 1362.064 ms/op
+Iteration   5: 1314.806 ms/op
+Iteration   6: 1287.749 ms/op
+Iteration   7: 1209.314 ms/op
+Iteration   8: 1206.958 ms/op
+Iteration   9: 1204.453 ms/op
+Iteration  10: 1201.954 ms/op
+Iteration  11: 1172.793 ms/op
+Iteration  12: 1288.639 ms/op
+Iteration  13: 1192.204 ms/op
+Iteration  14: 1277.471 ms/op
+Iteration  15: 1317.269 ms/op
+Iteration  16: 1293.064 ms/op
+Iteration  17: 1180.625 ms/op
+Iteration  18: 1206.436 ms/op
+Iteration  19: 1165.937 ms/op
+Iteration  20: 1292.148 ms/op
+Iteration  21: 1246.357 ms/op
+Iteration  22: 1191.692 ms/op
+Iteration  23: 1199.889 ms/op
+Iteration  24: 1236.263 ms/op
+Iteration  25: 1276.969 ms/op
+Iteration  26: 1251.217 ms/op
+Iteration  27: 1259.349 ms/op
+Iteration  28: 1258.266 ms/op
+Iteration  29: 1185.882 ms/op
+Iteration  30: 1215.849 ms/op
+Iteration  31: 1282.408 ms/op
+
+
+Result "perform1000PutsAndGets":
+  1288.437 ±(99.9%) 136.207 ms/op [Average]
+  (min, avg, max) = (1165.937, 1288.437, 2356.081), stdev = 208.003
+  CI (99.9%): [1152.230, 1424.644] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:01:54
+
+Benchmark                                        Mode  Cnt     Score     Error  Units
+Benchmark.BenchmarkState.perform1000Puts         avgt   31   674.244 ±  16.654  ms/op
+Benchmark.BenchmarkState.perform1000PutsAndGets  avgt   31  1288.437 ± 136.207  ms/op
